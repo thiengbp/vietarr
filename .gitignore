@@ -1,0 +1,9 @@
+.env
+*.env
+node_modules/
+appdata/
+install-report.txt
+.next/
+*.sqlite
+*.log
+.DS_Store
