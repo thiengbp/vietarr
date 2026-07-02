@@ -18,6 +18,6 @@ Block chỉ được đánh RELEASED khi toàn bộ Definition of Done PASS.
 4. Cập nhật bảng trạng thái file này + CHANGELOG.md.
 
 ## PoC đã xác nhận trước khi bắt đầu (điều kiện tiên quyết Block 01–02)
-- [ ] PoC-1: đọc API key từ config.xml + nối Prowlarr↔Radarr qua API
-- [ ] PoC-2: Next.js render poster grid từ Radarr API
-- [ ] PoC-3: deep link Infuse mở HTTP stream trên iPhone
+- [x] PoC-1: đọc API key từ config.xml + nối Prowlarr↔Radarr qua API
+- [x] PoC-2: Next.js render poster grid từ Radarr API
+- [x] PoC-3: deep link Infuse mở HTTP stream trên iPhone
