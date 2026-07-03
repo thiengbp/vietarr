@@ -19,7 +19,7 @@ BR-1: Radarr/Sonarr down → Dashboard vẫn render từ cache + banner cảnh b
 - [x] 2. Core scaffold: Node 22 + Express + better-sqlite3, đọc `.env`, cache SQLite 60s, health endpoint.
 - [x] 3. Core library API: Radarr movies, Sonarr series, detail movie, Bazarr subtitle status, lỗi upstream dùng cache + warning.
 - [x] 4. Core play/stream API: Infuse/VLC/SMB options, HTTP Range proxy, chỉ bật `httpStreamUrl` cho MP4/H.264+AAC.
-- [ ] 5. Web scaffold: Next.js 15 App Router + Tailwind, theme theo Design System, fetch chỉ qua Core.
+- [x] 5. Web scaffold: Next.js 15 App Router + Tailwind, theme theo Design System, fetch chỉ qua Core.
 - [ ] 6. Web views: poster grid phim lẻ/phim bộ, detail page, PlayMenu, EmptyState, skeleton, mobile-first responsive.
 - [ ] 7. Smoke checks trước DoD: type/build/lint cơ bản và API smoke local nếu có mock hoặc env thật.
 
