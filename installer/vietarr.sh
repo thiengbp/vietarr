@@ -183,6 +183,7 @@ install_command() {
   validate_media_path
 
   mkdir -p "$VIETARR_HOME/appdata"/{qbittorrent,prowlarr,radarr,sonarr,bazarr,recyclarr}
+  chown -R 1000:1000 "$VIETARR_HOME/appdata/recyclarr" 2>/dev/null || true
   write_env_once
   load_installed_env
 
@@ -219,7 +220,7 @@ install_command() {
 
   load_installed_env
   render_template "$SCRIPT_DIR/templates/recyclarr.yml.tpl" "$VIETARR_HOME/appdata/recyclarr/recyclarr.yml"
-  $COMPOSE run --rm --entrypoint recyclarr recyclarr sync || true
+  $COMPOSE run --rm --entrypoint recyclarr recyclarr sync
 
   VIETARR_HOME="$VIETARR_HOME" VIETARR_COMPOSE="$COMPOSE" "$SCRIPT_DIR/verify.sh"
 }
