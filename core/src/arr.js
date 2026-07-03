@@ -1,5 +1,3 @@
-const CACHE_TTL_MS = 60_000;
-
 export class UpstreamError extends Error {
   constructor(upstream, cause) {
     super(`${upstream} upstream unavailable`);
@@ -19,9 +17,6 @@ async function fetchJson(url, apiKey) {
 export function createArrClient({ cache, config }) {
   async function cachedJson({ key, upstream, url, apiKey, allowStale = true }) {
     const cached = cache.get(key);
-    if (cached && Date.now() - cached.updatedAt < CACHE_TTL_MS) {
-      return { data: cached.value, stale: false };
-    }
     try {
       const data = await fetchJson(url, apiKey);
       cache.set(key, data);

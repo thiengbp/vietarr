@@ -1,6 +1,20 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { extname, normalize } from "node:path";
 
+const CONTENT_TYPES = {
+  ".mp4": "video/mp4",
+  ".m4v": "video/x-m4v",
+  ".mkv": "video/x-matroska",
+  ".mov": "video/quicktime",
+  ".webm": "video/webm",
+  ".avi": "video/x-msvideo",
+  ".ts": "video/mp2t"
+};
+
+export function contentTypeForPath(path) {
+  return CONTENT_TYPES[extname(path || "").toLowerCase()] || "application/octet-stream";
+}
+
 export function imageUrl(images = [], preferred = ["poster", "cover", "fanart", "banner"]) {
   for (const coverType of preferred) {
     const found = images.find((image) => image.coverType === coverType && (image.remoteUrl || image.url));
@@ -162,10 +176,11 @@ export function streamMovieFile(movie, config, rangeHeader) {
   }
   const stat = statSync(filePath);
   const total = stat.size;
+  const contentType = contentTypeForPath(filePath);
   if (!rangeHeader) {
     return {
       status: 200,
-      headers: { "Content-Length": total, "Content-Type": "application/octet-stream" },
+      headers: { "Accept-Ranges": "bytes", "Content-Length": total, "Content-Type": contentType },
       stream: createReadStream(filePath)
     };
   }
@@ -175,8 +190,16 @@ export function streamMovieFile(movie, config, rangeHeader) {
     err.status = 416;
     throw err;
   }
-  const start = match[1] ? Number(match[1]) : 0;
-  const end = match[2] ? Number(match[2]) : total - 1;
+  let start;
+  let end;
+  if (!match[1] && match[2]) {
+    const suffixLength = Number(match[2]);
+    start = Math.max(total - suffixLength, 0);
+    end = total - 1;
+  } else {
+    start = match[1] ? Number(match[1]) : 0;
+    end = match[2] ? Number(match[2]) : total - 1;
+  }
   if (start >= total || end >= total || start > end) {
     const err = new Error("Range Not Satisfiable");
     err.status = 416;
@@ -189,7 +212,7 @@ export function streamMovieFile(movie, config, rangeHeader) {
       "Accept-Ranges": "bytes",
       "Content-Range": `bytes ${start}-${end}/${total}`,
       "Content-Length": end - start + 1,
-      "Content-Type": "application/octet-stream"
+      "Content-Type": contentType
     },
     stream: createReadStream(filePath, { start, end })
   };
