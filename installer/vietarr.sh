@@ -160,7 +160,6 @@ install_command() {
 
   [ -z "$config_file" ] || read_env_file "$config_file"
 
-  need_cmd node
   need_cmd docker
 
   if [ "$non_interactive" -eq 0 ]; then

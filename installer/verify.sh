@@ -60,7 +60,7 @@ rm -f "$tmp_a" "$tmp_b"
 
 services="caddy qbittorrent prowlarr radarr sonarr bazarr flaresolverr recyclarr"
 for service in $services; do
-  state="$($COMPOSE ps --format json "$service" 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const rows=s.trim().split(/\n+/).filter(Boolean).map(JSON.parse); const row=rows[0]||{}; console.log(row.Health || row.State || row.Status || "unknown")}catch{console.log("unknown")}})' 2>/dev/null || true)"
+  state="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "vietarr-$service" 2>/dev/null || true)"
   case "$state" in
     healthy|running|Running*|Up*) record "container:$service" "PASS" "$state" ;;
     *) record "container:$service" "FAIL" "$state" ;;
