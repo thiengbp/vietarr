@@ -12,6 +12,48 @@
 | GET | `/stream/:fileId` | HTTP 206 Range stream (không transcode) |
 | GET | `/health` | {status, radarr, sonarr, bazarr, qbit: up/down} |
 
+### B2 response schema
+`MediaSummary`
+```json
+{
+  "id": "movie-12",
+  "source": "radarr",
+  "tmdbId": 550,
+  "title": "Tên phim",
+  "year": 1999,
+  "posterUrl": "https://...",
+  "backdropUrl": "https://...",
+  "quality": "1080p",
+  "status": "available",
+  "sizeBytes": 1234567890,
+  "path": "/data/media/movies/Ten Phim (1999)/movie.mp4",
+  "smbPath": "smb://nas/media/media/movies/Ten%20Phim%20(1999)/movie.mp4",
+  "hasVietnameseSubtitle": true,
+  "warning": null
+}
+```
+
+`MovieDetail = MediaSummary + { overview, runtimeMinutes, files, subtitleStatus }`.
+`SeriesSummary = MediaSummary + { seasons: [{seasonNumber, episodeCount, availableCount}] }`.
+
+`PlayOptions`
+```json
+{
+  "infuseUrl": "infuse://x-callback-url/play?url=...",
+  "vlcUrl": "vlc-x-callback://x-callback-url/stream?url=...",
+  "smbPath": "smb://nas/media/...",
+  "httpStreamUrl": "http://core:3000/api/v1/stream/movie-12",
+  "browserPlayable": true
+}
+```
+
+Quy ước B2:
+- `id` là ID nội bộ ổn định dạng `<source>-<arrId>`; Block 2 không tạo media/request mới.
+- `status`: `available | missing | queued | downloading | unknown`.
+- Khi Radarr/Sonarr/Bazarr down, Core trả cache nếu có và thêm header `X-Vietarr-Cache: stale`; nếu chưa có cache thì trả `502` theo quy ước lỗi.
+- API key *arr không bao giờ xuất hiện trong response. Web chỉ gọi Core.
+- Block 2 đọc config từ `/opt/vietarr/.env`: `RADARR_API_KEY`, `SONARR_API_KEY`, `BAZARR_API_KEY`, `MEDIA_ROOT`, `DOMAIN_SUFFIX`; không tự dò `config.xml`.
+
 ## B3 — write + auth (draft, freeze khi B3 Release)
 POST `/auth/login` · GET `/discover/trending` · GET `/discover/search?q=` · POST `/request` {tmdbId, type, quality} · GET `/request/:id/progress` · POST `/webhook/arr` (Radarr/Sonarr gọi vào).
 
