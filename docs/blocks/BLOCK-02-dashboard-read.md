@@ -29,6 +29,25 @@ BR-1: Radarr/Sonarr down → Dashboard vẫn render từ cache + banner cảnh b
 ## 7. Release
 - Chưa chạy DoD khi chưa có duyệt của Jooh.
 
+### DoD Attempt 2026-07-03 — FAIL/BLOCKED
+- Test request: run official Block 02 DoD at `vietarr.home.arpa` with real library and real Infuse/Core stream.
+- Environment discovery:
+  - `curl -I -L http://vietarr.home.arpa --max-time 5` from the DoD machine failed DNS resolution: `Could not resolve host: vietarr.home.arpa`.
+  - Production media host `jooh@10.10.10.50` has running stack containers: `caddy`, `radarr`, `sonarr`, `bazarr`, `prowlarr`, `qbittorrent`.
+  - VM test 106 (`jooh@10.10.10.51`) has Block 01 stack but Radarr movie count is `0`.
+  - Production Radarr API returned movie count `1`; sample movie `Citizen Vigilante` has `hasFile=false` and `movieFile.path=null`.
+  - Production Sonarr API returned series count `1`.
+  - Production filesystem video count under `/mnt/media`, `/data`, `/media` is `1`; only sample found: `/mnt/media/data/media/movies/Bau.Vat.Troi.Cho.2025/Bau.Vat.Troi.Cho.2025.1080p.WEB-DL.AAC.2.0.H.264-HBO.mkv`.
+- DoD result:
+  - (1) Grid `>=100` phim trên iPhone: **FAIL/BLOCKED** — Radarr has `1` movie, VM test has `0`; no source library with `>=100` movies exists.
+  - (2) Infuse deep link opens Core stream with Range and real file: **BLOCKED** — no Radarr movie currently points to the real MKV file, so `/stream/:fileId` cannot be exercised honestly against a real Radarr media id.
+  - (3) Lighthouse mobile `>=85`: **BLOCKED** — `vietarr.home.arpa` does not resolve from the DoD machine and the app was not deployed to the domain.
+  - (4) Kill Radarr shows cache banner, no blank page: **BLOCKED** — official domain deployment and seeded Core cache require a library source first.
+- Decision: DoD not passed; no tag created; do not advance to Block 03. Need Jooh to provide/approve one of:
+  1. Radarr library with `>=100` movies and at least one movie file indexed.
+  2. A synthetic DoD fixture/mocked Radarr API explicitly approved for UI/Lighthouse, while deep-link stream uses the one real MKV.
+  3. Permission to import/index existing media into Radarr before rerunning official DoD.
+
 ## 8. Technical Debt
 | Nợ | Mức độ | Evidence | Trả ở |
 |----|--------|----------|-------|
