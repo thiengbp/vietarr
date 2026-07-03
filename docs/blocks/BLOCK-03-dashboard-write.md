@@ -1,18 +1,135 @@
 # BLOCK-03 — DASHBOARD WRITE + AUTH
-> **Trạng thái:** PLANNED · **Phụ thuộc:** B2 (API B2 freeze)
+> **Trạng thái:** IN PROGRESS
+> **Phụ thuộc:** B2 (API B2 freeze) · **Bắt đầu:** 2026-07-03
 
-## 1. Vision
-Từ điện thoại: tìm phim bất kỳ (TMDB tiếng Việt) → bấm "Tải về" chọn chất lượng → theo dõi % realtime trên card → phim về xong có thông báo, phụ đề Việt đã gắn. Nhiều user, phân quyền admin/member.
+## 1. Vision (đích đến)
+Từ điện thoại: tìm phim bất kỳ (TMDB tiếng Việt) → bấm "Tải về" chọn chất lượng → theo dõi % realtime trên card → phim về xong có toast notification ngay lập tức. Nhiều user, admin invite-only, rate limit configurable.
 
 ## 2. Scope & Non-Goals
-**Scope:** auth JWT + user SQLite · tab Khám phá (trending/search TMDB) · POST request sang Radarr/Sonarr · progress qua queue API (polling 3s, cân nhắc SSE) · webhook import-xong từ *arr → toast/notification · rate limit request theo user.
-**Non-Goals:** KHÔNG Fshare (B4) · KHÔNG email/OAuth · KHÔNG duyệt-request nhiều cấp (backlog).
+**Trong scope:**
+- Auth JWT (login/logout/refresh token, lưu SQLite).
+- User model: admin tạo invite link → user đăng ký qua link (invite-only, không đăng ký tự do).
+- Phân quyền: admin (full) / member (request + xem).
+- Rate limit request: mặc định 5/ngày/user, admin set được qua UI Settings.
+- Tab Khám phá: TMDB trending + search (tiếng Việt, dùng `language=vi`).
+- Nút "Tải về": chọn chất lượng → POST sang Radarr/Sonarr → UI chuyển sang trạng thái "Đang tải".
+- **WebSocket realtime** (không polling): Core giữ WS connection, nhận webhook từ Radarr/Sonarr (`OnGrab`, `OnImport`, `OnDownload`) → broadcast tới Dashboard client đang mở → card cập nhật % và badge ngay lập tức.
+- Toast notification khi import xong.
+- Webhook endpoint tự đăng ký vào Radarr/Sonarr khi Core khởi động (idempotent).
 
-## 3. Architecture / Contract
-API.md mục B3. Webhook endpoint đăng ký tự động vào Radarr/Sonarr khi Core khởi động (idempotent).
+**Non-Goals (CẤM làm ở block này):**
+- KHÔNG Fshare (Block 04).
+- KHÔNG email/OAuth/SSO.
+- KHÔNG duyệt-request nhiều cấp (admin approve từng request — backlog).
+- KHÔNG push notification mobile/PWA (backlog).
+- KHÔNG xóa phim từ Dashboard (admin-only, backlog).
+- KHÔNG thay đổi Interface Contract B2 đã freeze.
 
-## 4. Business Rules (khung)
-BR-1: member mặc định giới hạn 5 request/ngày (config được). BR-2: request trùng phim đã có → báo "Đã có", không tạo lệnh mới. BR-3: xóa phim chỉ admin.
+## 3. Architecture
 
-## 5–9.
-Điền khi IN PROGRESS. **DoD khung:** request từ iPhone → phim tự về + phụ đề + notify, không đụng UI *arr. **Next: BLOCK-04.**
+```
+Dashboard (Next.js)          Core (Express)              *arr
+     │                           │
+     │── WS connect ────────────►│ ws://core:3000/ws
+     │                           │◄── POST /webhook/arr ── Radarr/Sonarr
+     │                           │    (OnGrab, OnImport)
+     │◄── broadcast {type,       │
+     │     movieId, progress} ───│
+     │                           │
+     │── POST /request ─────────►│── POST /api/v3/movie ──► Radarr
+     │                           │── POST /api/v3/series ──► Sonarr
+     │◄── {requestId, status} ───│
+```
+
+**Modules mới trong `core/`:**
+- `auth.mjs` — JWT sign/verify, invite token (one-time, TTL 24h), bcrypt password.
+- `users.mjs` — SQLite schema: users, invites, request_log.
+- `requests.mjs` — POST request → *arr, ghi request_log, rate limit check.
+- `webhook.mjs` — nhận POST từ *arr, parse event, broadcast qua WS.
+- `ws.mjs` — WebSocket server (ws library), giữ map clientId→socket.
+- `settings.mjs` — đọc/ghi settings (rate_limit_per_day) từ SQLite.
+
+**Modules mới trong `web/`:**
+- `app/login/` — trang login + trang đăng ký qua invite link.
+- `app/discover/` — TMDB trending + search, nút Tải về.
+- `app/admin/` — quản lý user, tạo invite link, cài rate limit.
+- `hooks/useWebSocket.js` — kết nối WS, nhận event, update React state.
+- `components/RequestButton` — "Tải về" + chọn chất lượng → progress inline.
+- `components/Toast` — notification import xong.
+
+### Interface Contract (đóng băng khi Release)
+Thêm vào `docs/API.md` mục B3 (đã có draft, freeze khi Release):
+- `POST /auth/login` `{username, password}` → `{token, user}`
+- `POST /auth/invite/create` (admin) → `{inviteUrl, expiresAt}`
+- `POST /auth/register` `{inviteToken, username, password}` → `{token, user}`
+- `GET /discover/trending?page=` → TMDB trending (cached 1h)
+- `GET /discover/search?q=&page=` → TMDB search
+- `POST /request` `{tmdbId, type:'movie'|'series', qualityProfileId}` → `{requestId, status}`
+- `GET /request/:id/progress` → `{status, progress, eta}`
+- `POST /webhook/arr` — Radarr/Sonarr gọi vào (không auth, verify secret header)
+- `GET /settings` / `PATCH /settings` (admin) → `{rate_limit_per_day}`
+- `WS /ws?token=` — realtime events: `{type:'grab'|'import'|'progress', mediaId, data}`
+
+## 4. Business Rules
+- **BR-1:** Rate limit mặc định 5 request/ngày/user. Admin set qua `PATCH /settings`. Vượt limit → 429, UI hiện "Đã đạt giới hạn hôm nay".
+- **BR-2:** Request trùng phim đã có (`hasFile=true`) → 409, UI hiện "Đã có trong thư viện".
+- **BR-3:** Invite token dùng một lần, TTL 24h. Hết hạn → 410.
+- **BR-4:** Webhook từ *arr phải có header `X-Vietarr-Webhook-Secret` khớp với `.env`. Sai secret → 401, không broadcast.
+- **BR-5:** WS client mất kết nối → auto reconnect phía client (exponential backoff, max 30s). Core không giữ state per-client quá 5 phút idle.
+- **BR-6:** Xóa phim chỉ trực tiếp trong Radarr/Sonarr UI — Dashboard Block 03 không có nút xóa.
+- **BR-7:** Password hash bcrypt cost 12. JWT TTL 7 ngày, refresh khi còn < 1 ngày.
+
+## 5. Implementation
+- [ ] Spike: xác nhận `ws` npm package chạy được với Next.js App Router (server component không giữ WS — cần route handler riêng hoặc custom server)
+- [ ] SQLite schema: users, invites, request_log, settings
+- [ ] `auth.mjs`: JWT, invite flow, bcrypt
+- [ ] `users.mjs` + `settings.mjs`
+- [ ] `requests.mjs`: rate limit, POST → *arr, BR-2
+- [ ] `webhook.mjs` + `ws.mjs`: nhận event, broadcast
+- [ ] Tự đăng ký webhook vào Radarr/Sonarr khi Core start (idempotent)
+- [ ] Web: login page, register via invite, auth middleware (redirect nếu chưa login)
+- [ ] Web: Discover tab (TMDB trending + search + nút Tải về)
+- [ ] Web: RequestButton + progress inline + Toast
+- [ ] Web: Admin panel (user list, invite link generator, rate limit setting)
+- [ ] Web: `useWebSocket` hook + card update realtime
+- [ ] Smoke test end-to-end: login → request phim → WS nhận event → card cập nhật
+
+## 6. QA
+### Definition of Done
+- [ ] Đăng ký qua invite link → login → request phim → Radarr nhận lệnh (không trigger download thật, monitored=false vẫn tạo record)
+- [ ] Vượt rate limit → UI hiện "Đã đạt giới hạn", không tạo request mới
+- [ ] Request phim đã có (`hasFile=true`) → UI hiện "Đã có trong thư viện"
+- [ ] Webhook Radarr `OnImport` gửi về Core → WS broadcast → Toast hiện trong 2s trên Dashboard đang mở
+- [ ] Admin đổi rate_limit_per_day → áp dụng ngay không cần restart
+- [ ] Lighthouse mobile ≥85 (trang Discover)
+- [ ] `grep -r "password\|token\|secret" install-report.txt` → exit 1 (không lộ secret)
+- [ ] Chạy trên VM test 106 snapshot clean với stack từ Block 01
+
+### Test cases
+| Mã | Kịch bản | Kết quả mong đợi | Trạng thái |
+|----|----------|------------------|-----------| 
+| T1 | Happy path: invite → register → login → request | Radarr nhận lệnh, WS event về Dashboard | ⬜ |
+| T2 | Invite token hết hạn / dùng lần 2 | 410, UI hiện lỗi rõ | ⬜ |
+| T3 | Vượt rate limit | 429, "Đã đạt giới hạn hôm nay" | ⬜ |
+| T4 | Request phim hasFile=true | 409, "Đã có trong thư viện" | ⬜ |
+| T5 | Webhook sai secret | 401, không broadcast WS | ⬜ |
+| T6 | WS mất kết nối → reconnect | Client tự reconnect, nhận event tiếp theo | ⬜ |
+| T7 | Admin đổi rate limit → member bị ảnh hưởng ngay | Không cần restart | ⬜ |
+
+## 7. Release
+- Phiên bản: `v0.3.0`. Tag git + ghi CHANGELOG.
+- Người duyệt: Jooh.
+
+## 8. Technical Debt
+| Nợ | Mức độ | Trả ở |
+|----|--------|-------|
+| Push notification mobile/PWA | thấp | backlog |
+| Admin duyệt từng request | thấp | backlog |
+| Xóa phim từ Dashboard | thấp | backlog |
+| Email notification | thấp | backlog |
+
+## 9. Handoff & Next Block
+- Block 04 đọc JWT secret và webhook secret từ `/opt/vietarr/.env`.
+- Gotcha: WS với Next.js App Router cần custom server hoặc route handler — xác nhận ở spike ngày 1.
+- Radarr/Sonarr webhook URL phải là `https://vietarr.home.arpa/api/v1/webhook/arr` (qua Caddy).
+- **Next: BLOCK-04 — Fshare Bridge.**
