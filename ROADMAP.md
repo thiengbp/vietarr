@@ -5,8 +5,8 @@ Block chỉ được đánh RELEASED khi toàn bộ Definition of Done PASS.
 
 | Block | Tên | Trạng thái | File |
 |-------|-----|-----------|------|
-| 01 | Installer & Zero-touch Wiring | 🟢 ACTIVE | docs/blocks/BLOCK-01-installer.md |
-| 02 | Dashboard Read-only (thư viện + nút Xem) | ⚪ PLANNED | docs/blocks/BLOCK-02-dashboard-read.md |
+| 01 | Installer & Zero-touch Wiring | ✅ RELEASED `v0.1.0` | docs/blocks/BLOCK-01-installer.md |
+| 02 | Dashboard Read-only (thư viện + nút Xem) | 🟢 ACTIVE | docs/blocks/BLOCK-02-dashboard-read.md |
 | 03 | Dashboard Write (tìm TMDB, Tải về, user/auth) | ⚪ PLANNED | docs/blocks/BLOCK-03-dashboard-write.md |
 | 04 | Fshare Bridge (tab dán link → Torznab → giả API qBittorrent) | ⚪ PLANNED | docs/blocks/BLOCK-04-fshare-bridge.md |
 | 05 | Đóng gói phát hành (docs public, one-liner install, video) | ⚪ PLANNED | docs/blocks/BLOCK-05-release.md |

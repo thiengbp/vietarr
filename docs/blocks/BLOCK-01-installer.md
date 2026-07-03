@@ -1,8 +1,8 @@
 # BLOCK-01 — INSTALLER & ZERO-TOUCH WIRING
 
-> **Trạng thái:** READY FOR REVIEW (DoD PASS, chờ Jooh duyệt tag)
+> **Trạng thái:** RELEASED
 > **Phụ thuộc:** không (block nền móng)
-> **Bắt đầu / Kết thúc:** 2026-07-02 / dự kiến +2 tuần
+> **Bắt đầu / Kết thúc:** 2026-07-02 / 2026-07-03
 
 ## 1. Vision (đích đến)
 Trên một máy Ubuntu 24.04 sạch có Docker, người dùng chạy **một lệnh** `vietarr install`, trả lời tối đa 5 câu hỏi, và 15 phút sau có stack qBittorrent/Prowlarr/Radarr/Sonarr/Bazarr/Recyclarr/FlareSolverr/Caddy **đã tự nối với nhau hoàn chỉnh** — không phải mở UI của bất kỳ app *arr nào, không copy API key thủ công. Kết thúc bằng báo cáo verify tự động (hardlink test, container health, kết nối app-to-app).
@@ -85,7 +85,8 @@ Wiring qua API:
 - Người duyệt: Jooh.
 
 ### Release Evidence (2026-07-03)
-- Source commit tested: `a45d628` (`fix: require media write access for uid 1000`). Code pushed to `main`. Tag `v0.1.0` chưa tạo, chờ Jooh duyệt.
+- Source commit tested: `a45d628` (`fix: require media write access for uid 1000`). Code pushed to `main`; release docs/tag created after Jooh approval.
+- Release approval: Jooh confirmed `APPROVED BLOCK 01`; tag `v0.1.0` created after approval.
 - Test bed: Proxmox VM `106` (`vietarr-block01-test`), Ubuntu 24.04, Docker `29.1.3`, Compose `2.40.3`, snapshot `clean` recreated with source `a45d628`.
 - Media share: NFS `10.10.10.10:/volume1/media-test` mounted at `/mnt/media`; T1/T3 used `/mnt/media/data`.
 - Evidence files saved locally: `/private/tmp/vietarr-dod/T1` ... `/private/tmp/vietarr-dod/T5`.
