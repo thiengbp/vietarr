@@ -3,7 +3,7 @@
 > Chi tiết đầy đủ từng thành phần: xem docs/blocks/. File này là bức tranh tổng.
 
 ## Thành phần
-- **installer/** — CLI cài đặt + zero-touch wiring (B1). Chi tiết: BLOCK-01 §3.
+- **installer/** — CLI cài đặt + zero-touch wiring (B1). Sinh `/opt/vietarr/.env`, `/opt/vietarr/docker-compose.yml`, appdata local và `install-report.txt`; chi tiết: BLOCK-01 §3.
 - **core/** — Vietarr Core: Node.js/Express/SQLite. Auth, request, Fshare Bridge (Torznab + giả API qBittorrent), HTTP stream proxy, webhook từ *arr. (B3, B4)
 - **web/** — Dashboard Next.js 15: thư viện, khám phá TMDB, request, play menu. (B2, B3)
 - **installer/templates/** — template docker-compose, Caddyfile, recyclarr (installer render ra /opt/vietarr trên máy đích).
@@ -18,6 +18,7 @@
 - Các app *arr không publish port ra ngoài — chỉ Caddy + Core là mặt tiền.
 - Config app trên SSD local, media trên NFS. SQLite không bao giờ nằm trên NFS.
 - Không transcode. Không phụ thuộc Plex/Jellyfin.
+- Installer kiểm tra media root bằng UID 1000 trước khi cài; nếu NFS/permission không cho UID 1000 ghi hoặc không hỗ trợ hardlink giữa `torrents/` và `media/`, install phải dừng/fail rõ theo BLOCK-01.
 
 ## Sơ đồ
 (giữ bản mới nhất tại đây — nguồn: vietarr-architecture.md khởi thủy, cập nhật khi Release)

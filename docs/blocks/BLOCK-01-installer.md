@@ -1,6 +1,6 @@
 # BLOCK-01 — INSTALLER & ZERO-TOUCH WIRING
 
-> **Trạng thái:** IN PROGRESS
+> **Trạng thái:** READY FOR REVIEW (DoD PASS, chờ Jooh duyệt tag)
 > **Phụ thuộc:** không (block nền móng)
 > **Bắt đầu / Kết thúc:** 2026-07-02 / dự kiến +2 tuần
 
@@ -54,42 +54,59 @@ Wiring qua API:
 - **BR-5:** Hardlink verify fail → exit code 2 + cảnh báo đỏ "Radarr sẽ copy nhân đôi dung lượng", không silent pass.
 
 ## 5. Implementation
-- [ ] Spike D1: xác nhận đọc được API key từ config.xml cả 4 app; xác nhận Bazarr cấu hình được qua file/API
-- [ ] Wizard + validate input (đường dẫn, quyền ghi UID 1000)
-- [ ] Template compose/Caddyfile/recyclarr + render `.env`
-- [ ] `lib/wiring.mjs`: hàm chờ healthy, đọc config.xml, 6 lệnh wiring
-- [ ] `verify.sh`: hardlink inode test, health, app-to-app connectivity (Prowlarr test app, Radarr test download client)
-- [ ] Chế độ repair (BR-1) + rollback (BR-3)
-- [ ] Chạy end-to-end trên VM test sạch (snapshot Proxmox để lặp lại)
+- [x] Spike D1: xác nhận đọc được API key từ config.xml cả 4 app; xác nhận Bazarr cấu hình được qua file/API
+- [x] Wizard + validate input (đường dẫn, quyền ghi UID 1000)
+- [x] Template compose/Caddyfile/recyclarr + render `.env`
+- [x] `lib/wiring.mjs`: hàm chờ healthy, đọc config.xml, 6 lệnh wiring
+- [x] `verify.sh`: hardlink inode test, health, app-to-app connectivity (Prowlarr test app, Radarr test download client)
+- [x] Chế độ repair (BR-1) + rollback (BR-3)
+- [x] Chạy end-to-end trên VM test sạch (snapshot Proxmox để lặp lại)
 
 ## 6. QA
 ### Definition of Done
-- [ ] VM Ubuntu 24.04 sạch (snapshot) → 1 lệnh → exit code 0, không mở UI *arr lần nào trong toàn bộ quá trình
-- [ ] `install-report.txt` có: hardlink PASS (2 inode giống nhau), 8/8 container healthy, Prowlarr↔Radarr/Sonarr test OK, Radarr/Sonarr↔qBittorrent test OK
-- [ ] Chạy lệnh lần 2 → chế độ repair, không mất cấu hình (BR-1)
-- [ ] Rút quyền ghi thư mục media → installer dừng đúng theo BR-2 với thông báo dễ hiểu
-- [ ] `grep -r "password\|apikey" install-report.txt` không lộ secret nào
+- [x] VM Ubuntu 24.04 sạch (snapshot) → 1 lệnh → exit code 0, không mở UI *arr lần nào trong toàn bộ quá trình
+- [x] `install-report.txt` có: hardlink PASS (2 inode giống nhau), 8/8 container healthy, Prowlarr↔Radarr/Sonarr test OK, Radarr/Sonarr↔qBittorrent test OK
+- [x] Chạy lệnh lần 2 → chế độ repair, không mất cấu hình (BR-1)
+- [x] Rút quyền ghi thư mục media → installer dừng đúng theo BR-2 với thông báo dễ hiểu
+- [x] `grep -r "password\|apikey" install-report.txt` không lộ secret nào
 
 ### Test cases
 | Mã | Kịch bản | Kết quả mong đợi | Trạng thái |
 |----|----------|------------------|-----------|
-| T1 | Cài sạch happy path | exit 0, report toàn PASS | ⬜ |
-| T2 | Media path không ghi được | dừng, hướng dẫn NFS, exit 1 | ⬜ |
-| T3 | Chạy lần 2 | repair mode, giữ nguyên .env | ⬜ |
-| T4 | 1 container không healthy | rollback + in log, exit 1 | ⬜ |
-| T5 | NFS không hỗ trợ hardlink | exit 2 + cảnh báo copy | ⬜ |
+| T1 | Cài sạch happy path | exit 0, report toàn PASS | ✅ PASS |
+| T2 | Media path không ghi được | dừng, hướng dẫn NFS, exit 1 | ✅ PASS |
+| T3 | Chạy lần 2 | repair mode, giữ nguyên .env | ✅ PASS |
+| T4 | 1 container không healthy | rollback + in log, exit 1 | ✅ PASS |
+| T5 | NFS không hỗ trợ hardlink | exit 2 + cảnh báo copy | ✅ PASS |
 
 ## 7. Release
 - Phiên bản: `v0.1.0`. Tag git + ghi CHANGELOG mục Added.
 - Bằng chứng DoD đính kèm vào PR/commit release (output terminal, install-report.txt mẫu).
 - Người duyệt: Jooh.
 
+### Release Evidence (2026-07-03)
+- Source commit tested: `a45d628` (`fix: require media write access for uid 1000`). Code pushed to `main`. Tag `v0.1.0` chưa tạo, chờ Jooh duyệt.
+- Test bed: Proxmox VM `106` (`vietarr-block01-test`), Ubuntu 24.04, Docker `29.1.3`, Compose `2.40.3`, snapshot `clean` recreated with source `a45d628`.
+- Media share: NFS `10.10.10.10:/volume1/media-test` mounted at `/mnt/media`; T1/T3 used `/mnt/media/data`.
+- Evidence files saved locally: `/private/tmp/vietarr-dod/T1` ... `/private/tmp/vietarr-dod/T5`.
+- T1 PASS: clean install from snapshot `clean`, command `sudo ./installer/vietarr.sh install --non-interactive --media-path /mnt/media/data`; `install-report.txt` summary `PASS=12 FAIL=0`, exit `0`, hardlink inode `366`, 8/8 containers healthy, Prowlarr↔Radarr/Sonarr OK, Radarr/Sonarr↔qBittorrent OK.
+- Secret check PASS: `grep -Ei 'password|apikey|api_key' install-report.txt` returned exit `1` (no matches).
+- T2 PASS: media path `/tmp/vietarr-no-write` root-owned `0700`; installer stopped before compose with `ERROR: UID 1000 cannot write to /tmp/vietarr-no-write. Fix NFS/permission before install.`, exit `1`.
+- T3 PASS: second run printed `Repair mode: existing /opt/vietarr/.env found; keeping it unchanged.`, exit `0`; `.env` SHA before/after both `01889070bfc843fbe08e7f88e7072a68d9b21e1d6cd6f4424852b2b5c912ae3c`.
+- T4 PASS: VM source template mutated only for test so Caddy healthcheck returns `exit 1`; installer printed `Container readiness failed; rolling back.`, exit `1`; `docker ps --filter name=vietarr` empty after rollback.
+- T5 PASS: `/tmp/vietarr-hardlink-bad/torrents` mounted as tmpfs while `media` stayed on root fs; verify printed `FAIL hardlink - Radarr sẽ copy nhân đôi dung lượng`, summary `PASS=11 FAIL=1`, exit `2`.
+
 ## 8. Technical Debt
 | Nợ | Mức độ | Trả ở |
 |----|--------|-------|
-| (ghi trong quá trình làm) | | |
+| Installer ghi vào `/opt/vietarr`, nên trên Ubuntu sạch cần chạy bằng `sudo` hoặc qua one-liner có quyền root. | Low | Block 05 docs public |
+| qBittorrent port/VPN chưa cấu hình theo Non-Goal Block 01; installer giữ mặc định và không thêm indexer cụ thể. | Medium | Block sau khi có ADR VPN/indexer |
 
 ## 9. Handoff & Next Block
 - Block 2 đọc toàn bộ API key + đường dẫn từ `/opt/vietarr/.env` (contract mục 3) — không tự dò lại.
-- Gotcha ghi lại tại đây khi làm xong (vd: app nào sinh config.xml chậm, Bazarr wiring bằng cách nào).
+- API keys được đọc từ config sinh bởi app: Radarr/Sonarr/Prowlarr dùng `config.xml`, Bazarr dùng `config/config.yaml`; Block 2 không cần mở UI *arr.
+- Bazarr wiring hiện ghi config file rồi restart `vietarr-bazarr`; cần đợi restart trước khi verify.
+- Recyclarr sync chạy sau wiring và phải pass; log có bảng sync cho `vietarr-radarr` và `vietarr-sonarr`.
+- Installer validate media path bằng quyền UID 1000; nếu chạy bằng root/sudo nhưng UID 1000 không ghi được, installer vẫn dừng theo BR-2.
+- Verify hardlink kiểm tra giữa `$MEDIA_ROOT/torrents` và `$MEDIA_ROOT/media`; NAS/NFS phải cho hardlink trong cùng export.
 - **Next: BLOCK-02 — Dashboard (read-only library).**
