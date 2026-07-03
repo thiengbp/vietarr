@@ -6,6 +6,12 @@ COMPOSE="${VIETARR_COMPOSE:-docker compose}"
 REPORT="$VIETARR_HOME/install-report.txt"
 
 cd "$VIETARR_HOME"
+if [ -f "$VIETARR_HOME/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$VIETARR_HOME/.env"
+  set +a
+fi
 
 pass_count=0
 fail_count=0
@@ -33,10 +39,11 @@ line "VietArr install verify report"
 line "Generated: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 line ""
 
-tmp_a="$VIETARR_HOME/.hardlink-a"
-tmp_b="$VIETARR_HOME/.hardlink-b"
+MEDIA_ROOT="${MEDIA_ROOT:-/data}"
+tmp_a="$MEDIA_ROOT/torrents/.vietarr-hardlink-a"
+tmp_b="$MEDIA_ROOT/media/.vietarr-hardlink-b"
 rm -f "$tmp_a" "$tmp_b"
-if printf test > "$tmp_a" && ln "$tmp_a" "$tmp_b"; then
+if mkdir -p "$MEDIA_ROOT/torrents" "$MEDIA_ROOT/media" && printf test > "$tmp_a" && ln "$tmp_a" "$tmp_b"; then
   inode_a="$(stat -c '%i' "$tmp_a" 2>/dev/null || stat -f '%i' "$tmp_a")"
   inode_b="$(stat -c '%i' "$tmp_b" 2>/dev/null || stat -f '%i' "$tmp_b")"
   if [ "$inode_a" = "$inode_b" ]; then
