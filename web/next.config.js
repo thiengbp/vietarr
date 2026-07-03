@@ -1,4 +1,5 @@
 const nextConfig = {
+  outputFileTracingRoot: process.cwd(),
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },

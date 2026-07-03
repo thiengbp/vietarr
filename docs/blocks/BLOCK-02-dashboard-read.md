@@ -20,8 +20,8 @@ BR-1: Radarr/Sonarr down → Dashboard vẫn render từ cache + banner cảnh b
 - [x] 3. Core library API: Radarr movies, Sonarr series, detail movie, Bazarr subtitle status, lỗi upstream dùng cache + warning.
 - [x] 4. Core play/stream API: Infuse/VLC/SMB options, HTTP Range proxy, chỉ bật `httpStreamUrl` cho MP4/H.264+AAC.
 - [x] 5. Web scaffold: Next.js 15 App Router + Tailwind, theme theo Design System, fetch chỉ qua Core.
-- [ ] 6. Web views: poster grid phim lẻ/phim bộ, detail page, PlayMenu, EmptyState, skeleton, mobile-first responsive.
-- [ ] 7. Smoke checks trước DoD: type/build/lint cơ bản và API smoke local nếu có mock hoặc env thật.
+- [x] 6. Web views: poster grid phim lẻ/phim bộ, detail page, PlayMenu, EmptyState, skeleton, mobile-first responsive.
+- [x] 7. Smoke checks trước DoD: type/build/lint cơ bản và API smoke local nếu có mock hoặc env thật.
 
 ## 6. QA
 **DoD khung:** grid ≥100 phim mượt trên iPhone · deep link Infuse mở phát được file thật · Lighthouse mobile ≥85 · kill Radarr → BR-1 đúng.
