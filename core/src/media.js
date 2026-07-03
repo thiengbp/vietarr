@@ -59,7 +59,7 @@ export function mapMovie(movie, config) {
     sizeBytes: file?.size || 0,
     path: filePath,
     smbPath: toSmbPath(filePath, config),
-    hasVietnameseSubtitle: null,
+    hasVietnameseSubtitle: subtitleStatus(movie).vietnamese === "available",
     warning: null
   };
 }
@@ -102,8 +102,39 @@ export function movieDetail(movie, config) {
       quality: qualityName(file),
       browserPlayable: isBrowserPlayable(file)
     })) : [],
-    subtitleStatus: { vietnamese: "unknown" }
+    subtitleStatus: subtitleStatus(movie)
   };
+}
+
+export function mergeMovieSubtitles(movies, bazarrPayload) {
+  const rows = Array.isArray(bazarrPayload) ? bazarrPayload : bazarrPayload?.data || bazarrPayload?.movies || [];
+  if (!Array.isArray(rows) || rows.length === 0) return movies;
+  const byRadarrId = new Map();
+  const byTitle = new Map();
+  for (const row of rows) {
+    const radarrId = row.radarrId || row.radarr_id || row.movieId || row.movie_id;
+    if (radarrId) byRadarrId.set(Number(radarrId), row);
+    if (row.title) byTitle.set(String(row.title).toLowerCase(), row);
+  }
+  return movies.map((movie) => {
+    const bazarr = byRadarrId.get(Number(movie.id)) || byTitle.get(String(movie.title || "").toLowerCase());
+    if (!bazarr) return movie;
+    return { ...movie, bazarrSubtitleStatus: bazarr };
+  });
+}
+
+export function subtitleStatus(movie) {
+  const bazarr = movie.bazarrSubtitleStatus;
+  if (!bazarr) return { vietnamese: "unknown" };
+  const hasVi = (value) => {
+    const text = JSON.stringify(value || "").toLowerCase();
+    return text.includes('"vi"') || text.includes("vietnamese") || text.includes("tiếng việt") || text.includes("vie");
+  };
+  if (hasVi(bazarr.missing_subtitles) || hasVi(bazarr.missingSubtitles)) return { vietnamese: "missing" };
+  if (hasVi(bazarr.subtitles) || hasVi(bazarr.languages) || hasVi(bazarr.subtitlesPath)) {
+    return { vietnamese: "available" };
+  }
+  return { vietnamese: "unknown" };
 }
 
 export function playOptions(media, config) {

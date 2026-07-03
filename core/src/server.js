@@ -2,7 +2,7 @@ import express from "express";
 import { createCache } from "./cache.js";
 import { loadConfig } from "./config.js";
 import { createArrClient, UpstreamError } from "./arr.js";
-import { mapMovie, mapSeries, movieDetail, playOptions, streamMovieFile } from "./media.js";
+import { mapMovie, mapSeries, mergeMovieSubtitles, movieDetail, playOptions, streamMovieFile } from "./media.js";
 
 export function createServer(options = {}) {
   const config = options.config || loadConfig();
@@ -23,8 +23,17 @@ export function createServer(options = {}) {
   app.get("/api/v1/library/movies", async (_req, res, next) => {
     try {
       const result = await arr.movies();
+      let movies = result.data;
+      let warning = result.warning || null;
+      try {
+        const bazarr = await arr.bazarrMovies();
+        movies = mergeMovieSubtitles(movies, bazarr.data);
+        warning = warning || bazarr.warning || null;
+      } catch (_error) {
+        warning = warning || "bazarr down, subtitle status unknown";
+      }
       if (result.stale) res.set("X-Vietarr-Cache", "stale");
-      res.json(result.data.map((movie) => ({ ...mapMovie(movie, config), warning: result.warning || null })));
+      res.json(movies.map((movie) => ({ ...mapMovie(movie, config), warning })));
     } catch (error) {
       next(error);
     }
@@ -43,8 +52,17 @@ export function createServer(options = {}) {
   app.get("/api/v1/library/movies/:id", async (req, res, next) => {
     try {
       const result = await arr.movie(req.params.id);
+      let movie = result.data;
+      let warning = result.warning || null;
+      try {
+        const bazarr = await arr.bazarrMovies();
+        movie = mergeMovieSubtitles([movie], bazarr.data)[0];
+        warning = warning || bazarr.warning || null;
+      } catch (_error) {
+        warning = warning || "bazarr down, subtitle status unknown";
+      }
       if (result.stale) res.set("X-Vietarr-Cache", "stale");
-      res.json({ ...movieDetail(result.data, config), warning: result.warning || null });
+      res.json({ ...movieDetail(movie, config), warning });
     } catch (error) {
       next(error);
     }

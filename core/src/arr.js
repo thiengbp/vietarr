@@ -10,7 +10,7 @@ export class UpstreamError extends Error {
 }
 
 async function fetchJson(url, apiKey) {
-  const headers = apiKey ? { "X-Api-Key": apiKey } : {};
+  const headers = apiKey ? { "X-Api-Key": apiKey, "X-API-KEY": apiKey } : {};
   const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
@@ -55,6 +55,10 @@ export function createArrClient({ cache, config }) {
     series() {
       const url = `${config.sonarr.baseUrl}/api/v3/series`;
       return cachedJson({ key: "sonarr:series", upstream: "sonarr", url, apiKey: config.sonarr.apiKey });
+    },
+    bazarrMovies() {
+      const url = `${config.bazarr.baseUrl}/api/movies?start=0&length=10000`;
+      return cachedJson({ key: "bazarr:movies", upstream: "bazarr", url, apiKey: config.bazarr.apiKey, allowStale: true });
     }
   };
 }
