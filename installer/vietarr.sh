@@ -190,6 +190,7 @@ install_command() {
   render_template "$SCRIPT_DIR/templates/docker-compose.yml.tpl" "$VIETARR_HOME/docker-compose.yml"
   render_template "$SCRIPT_DIR/templates/Caddyfile.tpl" "$VIETARR_HOME/Caddyfile"
   render_template "$SCRIPT_DIR/templates/recyclarr.yml.tpl" "$VIETARR_HOME/appdata/recyclarr/recyclarr.yml"
+  chown -R 1000:1000 "$VIETARR_HOME/appdata/recyclarr" 2>/dev/null || true
 
   cd "$VIETARR_HOME"
   $COMPOSE up -d
@@ -220,6 +221,7 @@ install_command() {
 
   load_installed_env
   render_template "$SCRIPT_DIR/templates/recyclarr.yml.tpl" "$VIETARR_HOME/appdata/recyclarr/recyclarr.yml"
+  chown -R 1000:1000 "$VIETARR_HOME/appdata/recyclarr" 2>/dev/null || true
   $COMPOSE run --rm --entrypoint recyclarr recyclarr sync
 
   VIETARR_HOME="$VIETARR_HOME" VIETARR_COMPOSE="$COMPOSE" "$SCRIPT_DIR/verify.sh"
