@@ -64,12 +64,10 @@ validate_media_path() {
     touch "$test_file" && rm -f "$test_file" || die "UID 1000 cannot write to $MEDIA_ROOT. Fix NFS/permission before install."
     return
   fi
-  if command -v sudo >/dev/null 2>&1 && sudo -n -u '#1000' sh -c "touch '$test_file' && rm -f '$test_file'" >/dev/null 2>&1; then
+  if command -v setpriv >/dev/null 2>&1 && setpriv --reuid 1000 --regid 1000 --clear-groups sh -c 'touch "$1" && rm -f "$1"' sh "$test_file" >/dev/null 2>&1; then
     return
   fi
-  if [ -w "$MEDIA_ROOT" ]; then
-    touch "$test_file" && rm -f "$test_file" || die "Cannot write to $MEDIA_ROOT. Fix NFS/permission before install."
-    echo "WARN: Could not impersonate UID 1000; verified write access as current user only." >&2
+  if command -v sudo >/dev/null 2>&1 && sudo -n -u '#1000' sh -c 'touch "$1" && rm -f "$1"' sh "$test_file" >/dev/null 2>&1; then
     return
   fi
   die "UID 1000 cannot write to $MEDIA_ROOT. Fix NFS/permission before install."
