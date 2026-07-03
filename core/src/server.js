@@ -1,8 +1,10 @@
+import http from "node:http";
 import express from "express";
 import { createCache } from "./cache.js";
 import { loadConfig } from "./config.js";
 import { createArrClient, UpstreamError } from "./arr.js";
 import { mapMovie, mapSeries, mergeMovieSubtitles, movieDetail, playOptions, streamMovieFile } from "./media.js";
+import { attachWebSocketServer } from "./ws.js";
 
 export function createServer(options = {}) {
   const config = options.config || loadConfig();
@@ -108,7 +110,9 @@ export function createServer(options = {}) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const config = loadConfig();
   const app = createServer({ config, cache: createCache(config.cachePath) });
-  app.listen(config.port, () => {
+  const server = http.createServer(app);
+  attachWebSocketServer(server);
+  server.listen(config.port, () => {
     console.log(`VietArr Core listening on :${config.port}`);
   });
 }

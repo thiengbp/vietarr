@@ -55,7 +55,64 @@ Quy ước B2:
 - Block 2 đọc config từ `/opt/vietarr/.env`: `RADARR_API_KEY`, `SONARR_API_KEY`, `BAZARR_API_KEY`, `MEDIA_ROOT`, `DOMAIN_SUFFIX`; không tự dò `config.xml`.
 
 ## B3 — write + auth (draft, freeze khi B3 Release)
-POST `/auth/login` · GET `/discover/trending` · GET `/discover/search?q=` · POST `/request` {tmdbId, type, quality} · GET `/request/:id/progress` · POST `/webhook/arr` (Radarr/Sonarr gọi vào).
+POST `/auth/login` · GET `/discover/trending` · GET `/discover/search?q=` · POST `/request` {tmdbId, type, quality} · GET `/request/:id/progress` · POST `/webhook/arr` (Radarr/Sonarr gọi vào) · WS `/ws?token=`.
+
+### B3 realtime WS
+Client kết nối `ws://core:3000/ws?token=<JWT>` hoặc qua Caddy `wss://vietarr.home.arpa/ws?token=<JWT>`.
+
+Server events:
+```json
+{
+  "type": "grab",
+  "mediaId": "movie-101",
+  "requestId": "req_01H...",
+  "source": "radarr",
+  "data": {
+    "title": "Tên phim",
+    "status": "downloading",
+    "progress": 0
+  },
+  "ts": "2026-07-04T02:00:00.000Z"
+}
+```
+
+```json
+{
+  "type": "progress",
+  "mediaId": "movie-101",
+  "requestId": "req_01H...",
+  "source": "radarr",
+  "data": {
+    "status": "downloading",
+    "progress": 43,
+    "eta": "00:12:30",
+    "downloadClient": "qBittorrent"
+  },
+  "ts": "2026-07-04T02:00:05.000Z"
+}
+```
+
+```json
+{
+  "type": "import",
+  "mediaId": "movie-101",
+  "requestId": "req_01H...",
+  "source": "radarr",
+  "data": {
+    "status": "available",
+    "progress": 100,
+    "path": "/data/media/movies/Ten Phim (2026)/movie.mkv"
+  },
+  "ts": "2026-07-04T02:20:00.000Z"
+}
+```
+
+Realtime rules:
+- `grab` và `import` đến từ Radarr/Sonarr webhook `POST /webhook/arr` (`OnGrab`, `OnImport`, `OnDownload`).
+- `progress` không phải Radarr/Sonarr push. Khi Core thấy active grab/download, Core tự polling Radarr/Sonarr `/api/v3/queue` mỗi 5s, tính `progress` theo queue item, rồi broadcast WS cho client đang mở.
+- Khi queue item biến mất mà chưa có `OnImport`, Core broadcast `progress` cuối cùng với `status="unknown"` và dừng polling item đó sau 5 phút idle.
+- `progress` là số nguyên `0..100`. Client không tự suy diễn % từ UI nếu server đã gửi field này.
+- WS client phải auto reconnect; reconnect xong client gọi lại REST read API để rehydrate state, vì Core không replay event history trong B3.
 
 ## B4 — Fshare Bridge (draft)
 GET `/torznab/api?t=search&q=` (Prowlarr gọi) · Giả lập qBittorrent WebUI API: `/fakeqb/api/v2/auth/login`, `/fakeqb/api/v2/torrents/add|info|delete` (Radarr/Sonarr gọi như download client thật).
