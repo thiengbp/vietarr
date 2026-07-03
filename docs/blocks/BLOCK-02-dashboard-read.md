@@ -1,5 +1,5 @@
 # BLOCK-02 — DASHBOARD READ-ONLY
-> **Trạng thái:** IN PROGRESS · **Phụ thuộc:** B1 (.env contract) + PoC Infuse deep link PASS
+> **Trạng thái:** READY FOR REVIEW (DoD PASS, chờ Jooh duyệt tag) · **Phụ thuộc:** B1 (.env contract) + PoC Infuse deep link PASS
 
 ## 1. Vision
 Mở `vietarr.home.arpa` trên điện thoại/máy tính → thấy toàn bộ thư viện dạng poster grid như web xem phim; bấm một phim → trang chi tiết đẹp → bấm "Xem" mở thẳng Infuse (hoặc VLC / copy SMB).
@@ -28,6 +28,40 @@ BR-1: Radarr/Sonarr down → Dashboard vẫn render từ cache + banner cảnh b
 
 ## 7. Release
 - Chưa chạy DoD khi chưa có duyệt của Jooh.
+
+### DoD Official 2026-07-03 — PASS
+- Source commit tested: `a98646f` (`fix: avoid caching core read responses`) plus temporary deployment on production host `10.10.10.50`.
+- Deployment under test:
+  - `vietarr-core-dod` and `vietarr-web-dod` run as temporary containers on Docker network `media`.
+  - Caddy route `http://vietarr.home.arpa` proxies `/api/v1/*` to `vietarr-core-dod:3000` and all other paths to `vietarr-web-dod:3000`.
+  - Evidence artifacts saved locally under `/private/tmp/vietarr-block02-dod/`.
+- Precondition verified:
+  - `vietarr.home.arpa` resolves to `10.10.10.50`.
+  - Radarr movie count via Core: `101`.
+  - Real imported file: `movie-101` / `A Gift From Heaven`, `status=available`, `quality=WEBDL-1080p`, path `/data/media/movies/A Gift From Heaven (2026)/Bau.Vat.Troi.Cho.2025.1080p.WEB-DL.AAC.2.0.H.264-HBO.mkv`, size `5474484168`.
+- (1) Grid `>=100` phim mượt trên iPhone: **PASS**.
+  - Playwright iPhone 13 check at `http://vietarr.home.arpa`: `cards=101`, `loadMs=1875`, `smooth=true`.
+  - Screenshot: `/private/tmp/vietarr-block02-dod/iphone-grid.png`.
+- (2) Deep link Infuse mở Core stream file thật có Range: **PASS**.
+  - Play options for `movie-101`: `infuse://x-callback-url/play?url=http%3A%2F%2Fvietarr.home.arpa%2Fapi%2Fv1%2Fstream%2Fmovie-101`.
+  - `open <infuseUrl>` returned `OPEN_EXIT=0`; macOS process list showed `Infuse`.
+  - Core stream through Caddy with `Range: bytes=0-1023` returned:
+    - `HTTP/1.1 206 Partial Content`
+    - `Accept-Ranges: bytes`
+    - `Content-Range: bytes 0-1023/5474484168`
+    - `Content-Length: 1024`
+    - `Content-Type: video/x-matroska`
+- (3) Lighthouse mobile `>=85`: **PASS**.
+  - Lighthouse mobile performance score: `100`.
+  - Metrics: FCP `0.1 s`, LCP `1.3 s`, TBT `10 ms`, CLS `0`, Speed Index `0.7 s`.
+  - Report: `/private/tmp/vietarr-block02-dod/lighthouse-mobile.json`.
+- (4) Kill Radarr -> banner hiện, không trắng trang: **PASS**.
+  - Test sequence: `docker stop radarr`, request `http://vietarr.home.arpa/api/v1/library/movies`, Playwright iPhone reload, then `docker start radarr`.
+  - Core response while Radarr down: `HTTP/1.1 200 OK`, `X-Vietarr-Cache: stale`, `Content-Length: 51714`.
+  - Playwright iPhone check while Radarr down: `cards=101`, `banner=true`, `blank=false`.
+  - Screenshot: `/private/tmp/vietarr-block02-dod/iphone-stale-cache.png`.
+  - Radarr restarted and returned `RADARR_STATUS=healthy`.
+- Decision: DoD passed. No tag created; waiting for Jooh approval before release/tag and before moving to Block 03.
 
 ### DoD Attempt 2026-07-03 — FAIL/BLOCKED
 - Test request: run official Block 02 DoD at `vietarr.home.arpa` with real library and real Infuse/Core stream.
