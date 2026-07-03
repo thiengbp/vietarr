@@ -8,7 +8,7 @@ export class UpstreamError extends Error {
 }
 
 async function fetchJson(url, apiKey) {
-  const headers = apiKey ? { "X-Api-Key": apiKey, "X-API-KEY": apiKey } : {};
+  const headers = apiKey ? { "X-Api-Key": apiKey } : {};
   const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
