@@ -16,7 +16,7 @@ BR-1: Radarr/Sonarr down → Dashboard vẫn render từ cache + banner cảnh b
 
 ## 5. Implementation
 - [ ] 1. API contract detail: bổ sung schema B2 vào `docs/API.md`, giữ `/opt/vietarr/.env` là nguồn config duy nhất từ B1.
-- [ ] 2. Core scaffold: Node 22 + Express + better-sqlite3, đọc `.env`, cache SQLite 60s, health endpoint.
+- [x] 2. Core scaffold: Node 22 + Express + better-sqlite3, đọc `.env`, cache SQLite 60s, health endpoint.
 - [ ] 3. Core library API: Radarr movies, Sonarr series, detail movie, Bazarr subtitle status, lỗi upstream dùng cache + warning.
 - [ ] 4. Core play/stream API: Infuse/VLC/SMB options, HTTP Range proxy, chỉ bật `httpStreamUrl` cho MP4/H.264+AAC.
 - [ ] 5. Web scaffold: Next.js 15 App Router + Tailwind, theme theo Design System, fetch chỉ qua Core.
