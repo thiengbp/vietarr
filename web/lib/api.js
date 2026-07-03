@@ -1,7 +1,7 @@
 const API_BASE = process.env.CORE_API_URL || "http://localhost:3000/api/v1";
 
 async function getJson(path) {
-  const res = await fetch(`${API_BASE}${path}`, { next: { revalidate: 30 } });
+  const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
   const cacheState = res.headers.get("x-vietarr-cache");
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
