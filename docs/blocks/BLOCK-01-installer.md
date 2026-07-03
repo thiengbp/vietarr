@@ -105,7 +105,8 @@ Wiring qua API:
 ## 9. Handoff & Next Block
 - Block 2 đọc toàn bộ API key + đường dẫn từ `/opt/vietarr/.env` (contract mục 3) — không tự dò lại.
 - API keys được đọc từ config sinh bởi app: Radarr/Sonarr/Prowlarr dùng `config.xml`, Bazarr dùng `config/config.yaml`; Block 2 không cần mở UI *arr.
-- Bazarr wiring hiện ghi config file rồi restart `vietarr-bazarr`; cần đợi restart trước khi verify.
+- Bazarr wiring hiện ghi `config/config.yaml` rồi restart `vietarr-bazarr`; cần đợi restart trước khi verify.
+- Gotcha cho Block 2: `/opt/vietarr/.env` có thể đã có `BAZARR_API_KEY` đúng trước khi Bazarr nhận config Radarr/Sonarr sau restart. Nếu Bazarr restart fail hoặc chậm ngay sau install, health/API check Bazarr có thể lỗi tạm thời dù key trong `.env` hợp lệ; Block 2 nên retry/poll Bazarr readiness thay vì coi đó là config-key failure.
 - Recyclarr sync chạy sau wiring và phải pass; log có bảng sync cho `vietarr-radarr` và `vietarr-sonarr`.
 - Installer validate media path bằng quyền UID 1000; nếu chạy bằng root/sudo nhưng UID 1000 không ghi được, installer vẫn dừng theo BR-2.
 - Verify hardlink kiểm tra giữa `$MEDIA_ROOT/torrents` và `$MEDIA_ROOT/media`; NAS/NFS phải cho hardlink trong cùng export.
