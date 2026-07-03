@@ -3,6 +3,13 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-03
+### Added
+- BLOCK-02 Core read-only API: library movies/series, movie detail, health, play options, and HTTP Range stream endpoint.
+- BLOCK-02 Dashboard web: mobile-first poster grid, series grid, movie detail page, PlayMenu, EmptyState, skeleton loading, and cache warning banner.
+- SQLite cache fallback for Radarr/Sonarr downtime with `X-Vietarr-Cache: stale`.
+- Official BLOCK-02 DoD evidence for iPhone grid `101` movies, Infuse deep link/Core Range stream, Lighthouse mobile `100`, and kill-Radarr stale-cache banner.
+
 ## [0.1.0] - 2026-07-03
 ### Added
 - Khung dự án: docs, roadmap, design system, ADR 001–004, đặc tả BLOCK-01.

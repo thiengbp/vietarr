@@ -1,5 +1,5 @@
 # BLOCK-02 — DASHBOARD READ-ONLY
-> **Trạng thái:** READY FOR REVIEW (DoD PASS, chờ Jooh duyệt tag) · **Phụ thuộc:** B1 (.env contract) + PoC Infuse deep link PASS
+> **Trạng thái:** RELEASED · **Phụ thuộc:** B1 (.env contract) + PoC Infuse deep link PASS
 
 ## 1. Vision
 Mở `vietarr.home.arpa` trên điện thoại/máy tính → thấy toàn bộ thư viện dạng poster grid như web xem phim; bấm một phim → trang chi tiết đẹp → bấm "Xem" mở thẳng Infuse (hoặc VLC / copy SMB).
@@ -27,7 +27,8 @@ BR-1: Radarr/Sonarr down → Dashboard vẫn render từ cache + banner cảnh b
 **DoD khung:** grid ≥100 phim mượt trên iPhone · deep link Infuse mở phát được file thật · Lighthouse mobile ≥85 · kill Radarr → BR-1 đúng.
 
 ## 7. Release
-- Chưa chạy DoD khi chưa có duyệt của Jooh.
+- Phiên bản: `v0.2.0`.
+- Người duyệt: Jooh.
 
 ### DoD Official 2026-07-03 — PASS
 - Source commit tested: `a98646f` (`fix: avoid caching core read responses`) plus temporary deployment on production host `10.10.10.50`.
@@ -61,7 +62,7 @@ BR-1: Radarr/Sonarr down → Dashboard vẫn render từ cache + banner cảnh b
   - Playwright iPhone check while Radarr down: `cards=101`, `banner=true`, `blank=false`.
   - Screenshot: `/private/tmp/vietarr-block02-dod/iphone-stale-cache.png`.
   - Radarr restarted and returned `RADARR_STATUS=healthy`.
-- Decision: DoD passed. No tag created; waiting for Jooh approval before release/tag and before moving to Block 03.
+- Decision: DoD passed. Jooh approved release; tag `v0.2.0` created.
 
 ### DoD Attempt 2026-07-03 — FAIL/BLOCKED
 - Test request: run official Block 02 DoD at `vietarr.home.arpa` with real library and real Infuse/Core stream.
