@@ -1,5 +1,5 @@
 # ADR-001: Tích hợp Fshare bằng giả lập API qBittorrent + Torznab
-- **Ngày:** 2026-07-02 · **Trạng thái:** Accepted
+- **Ngày:** 2026-07-02 · **Trạng thái:** Superseded by ADR-005
 ## Bối cảnh
 Radarr/Sonarr chỉ hỗ trợ download client có sẵn (qBittorrent, SAB...) và indexer chuẩn Torznab/Newznab. Fshare không thuộc nhóm nào.
 ## Quyết định
