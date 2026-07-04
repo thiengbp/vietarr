@@ -58,7 +58,7 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch }
         ...config.radarr,
         path: `/api/v3/movie/${existing.id}`,
         method: "PUT",
-        body: { ...existing, monitored: true, qualityProfileId: Number(qualityProfileId || existing.qualityProfileId) },
+        body: { ...existing, monitored: false, qualityProfileId: Number(qualityProfileId || existing.qualityProfileId) },
         fetchImpl
       });
       db.updateRequestLog({ id: requestId, arrId: updated.id, status: "queued" });
