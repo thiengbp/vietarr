@@ -4,13 +4,27 @@ import { createCache } from "./cache.js";
 import { loadConfig } from "./config.js";
 import { createArrClient, UpstreamError } from "./arr.js";
 import { mapMovie, mapSeries, mergeMovieSubtitles, movieDetail, playOptions, streamMovieFile } from "./media.js";
-import { attachWebSocketServer } from "./ws.js";
+import { createAppDb } from "./db.mjs";
+import { createWebhookService, registerArrWebhooks } from "./webhook.mjs";
+import { attachWebSocketServer, createRealtimeHub } from "./ws.js";
 
 export function createServer(options = {}) {
   const config = options.config || loadConfig();
   const cache = options.cache || createCache(config.cachePath);
+  const db = options.db || createAppDb(config.dbPath);
+  const hub = options.hub || createRealtimeHub();
   const app = express();
   const arr = createArrClient({ cache, config });
+  const webhook = options.webhook || createWebhookService({
+    hub,
+    webhookSecret: config.webhookSecret,
+    radarr: config.radarr,
+    sonarr: config.sonarr
+  });
+
+  app.locals.config = config;
+  app.locals.db = db;
+  app.locals.hub = hub;
 
   app.use(express.json());
 
@@ -96,6 +110,10 @@ export function createServer(options = {}) {
     }
   });
 
+  app.post("/api/v1/webhook/arr", (req, res, next) => {
+    Promise.resolve(webhook.handleArrWebhook(req, res)).catch(next);
+  });
+
   app.use((error, _req, res, _next) => {
     if (error instanceof UpstreamError) {
       return res.status(502).json({ error: { code: "upstream_unavailable", message: error.message, upstream: error.upstream } });
@@ -109,10 +127,18 @@ export function createServer(options = {}) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const config = loadConfig();
-  const app = createServer({ config, cache: createCache(config.cachePath) });
+  const hub = createRealtimeHub();
+  const app = createServer({ config, cache: createCache(config.cachePath), hub });
   const server = http.createServer(app);
-  attachWebSocketServer(server);
+  attachWebSocketServer(server, { hub });
   server.listen(config.port, () => {
     console.log(`VietArr Core listening on :${config.port}`);
+    registerArrWebhooks({ config, webhookUrl: config.webhookUrl, webhookSecret: config.webhookSecret })
+      .then((results) => {
+        console.log(`Webhook registration: ${JSON.stringify(results)}`);
+      })
+      .catch((error) => {
+        console.warn(`Webhook registration failed: ${error.message}`);
+      });
   });
 }

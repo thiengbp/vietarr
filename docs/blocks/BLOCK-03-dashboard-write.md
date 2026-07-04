@@ -80,13 +80,13 @@ Thêm vào `docs/API.md` mục B3 (đã có draft, freeze khi Release):
 - **BR-7:** Password hash bcrypt cost 12. JWT TTL 7 ngày, refresh khi còn < 1 ngày.
 
 ## 5. Implementation
-- [ ] Spike: xác nhận `ws` npm package chạy được với Next.js App Router (server component không giữ WS — cần route handler riêng hoặc custom server)
-- [ ] SQLite schema: users, invites, request_log, settings
-- [ ] `auth.mjs`: JWT, invite flow, bcrypt
+- [x] Spike: xác nhận `ws` npm package chạy được với Next.js App Router (server component không giữ WS — cần route handler riêng hoặc custom server)
+- [x] SQLite schema: users, invites, request_log, settings
+- [x] `auth.mjs`: JWT, invite flow, bcrypt
 - [ ] `users.mjs` + `settings.mjs`
 - [ ] `requests.mjs`: rate limit, POST → *arr, BR-2
-- [ ] `webhook.mjs` + `ws.mjs`: nhận event, broadcast
-- [ ] Tự đăng ký webhook vào Radarr/Sonarr khi Core start (idempotent)
+- [x] `webhook.mjs` + `ws.mjs`: nhận event, broadcast
+- [x] Tự đăng ký webhook vào Radarr/Sonarr khi Core start (idempotent)
 - [ ] Web: login page, register via invite, auth middleware (redirect nếu chưa login)
 - [ ] Web: Discover tab (TMDB trending + search + nút Tải về)
 - [ ] Web: RequestButton + progress inline + Toast
