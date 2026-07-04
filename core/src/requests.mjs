@@ -82,7 +82,7 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch }
         tmdbId: movie.id,
         year: Number((movie.release_date || "").slice(0, 4)) || undefined,
         rootFolderPath,
-        monitored: true,
+        monitored: false,
         addOptions: { searchForMovie: false }
       },
       fetchImpl
