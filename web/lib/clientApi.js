@@ -2,7 +2,10 @@ const CLIENT_API_BASE = process.env.NEXT_PUBLIC_CORE_API_URL || "/api/v1";
 
 export function getToken() {
   if (typeof window === "undefined") return "";
-  return window.localStorage.getItem("vietarr_token") || "";
+  const stored = window.localStorage.getItem("vietarr_token");
+  if (stored) return stored;
+  const cookie = document.cookie.split("; ").find((part) => part.startsWith("vietarr_token="));
+  return cookie ? decodeURIComponent(cookie.slice("vietarr_token=".length)) : "";
 }
 
 export function saveSession({ token, user }) {
