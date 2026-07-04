@@ -3,6 +3,19 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-04
+### Added
+- BLOCK-03 auth: JWT login, invite-only registration, bcrypt password hashing, admin invite creation, user list, and configurable `rate_limit_per_day`.
+- BLOCK-03 Core write APIs: TMDB discover/search, Radarr request creation with `searchForMovie:false`, duplicate `hasFile=true` protection, request logging, settings, and quality profile lookup.
+- BLOCK-03 realtime: Core WebSocket server, Radarr/Sonarr webhook receiver with `X-Vietarr-Webhook-Secret`, queue polling progress events, import/grab broadcasts, and idempotent webhook registration.
+- BLOCK-03 Dashboard write UI: login/register, Discover tab, RequestButton with quality selection and inline progress, toast on import, WS reconnect hook, and Admin panel.
+- Official BLOCK-03 DoD evidence for T1-T7 on VM 106 snapshot `clean`, Toast within 2s, Lighthouse mobile Discover `100`, and secret leak check PASS.
+
+### Fixed
+- Preserve Core error codes in JSON responses.
+- Keep Block 03 Radarr requests unmonitored and non-searching for DoD-safe request creation.
+- Read Web auth token from cookie fallback for middleware/client consistency.
+
 ## [0.2.0] - 2026-07-03
 ### Added
 - BLOCK-02 Core read-only API: library movies/series, movie detail, health, play options, and HTTP Range stream endpoint.

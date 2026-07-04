@@ -119,7 +119,7 @@ Thêm vào `docs/API.md` mục B3 (đã có draft, freeze khi Release):
 ## 7. Release
 - Phiên bản: `v0.3.0`. Tag git + ghi CHANGELOG.
 - Người duyệt: Jooh.
-- DoD chính thức chạy trên VM test 106 sau rollback snapshot `clean` ngày 2026-07-04; chưa tag.
+- DoD chính thức chạy trên VM test 106 sau rollback snapshot `clean` ngày 2026-07-04; tag release `v0.3.0`.
 - Stack Block 01 install verify: `Summary: PASS=12 FAIL=0`; containers caddy/qBittorrent/Prowlarr/Radarr/Sonarr/Bazarr/FlareSolverr/Recyclarr healthy; Prowlarr↔Radarr/Sonarr, Radarr↔qBittorrent, Sonarr↔qBittorrent PASS.
 - T1 PASS: invite/register `200`, request `202`, Radarr movie id `2`, `monitored=false`, `searchForMovie=false`, WS event `{type:"grab", mediaId:"movie-2", title:"Fight Club"}`.
 - T2 PASS: dùng lại invite token trả `410`, error code `invite_invalid`, message `Invite token is invalid or already used`.
@@ -142,7 +142,9 @@ Thêm vào `docs/API.md` mục B3 (đã có draft, freeze khi Release):
 | `npm audit --omit=dev` trong `web/` báo 2 moderate qua `next -> postcss <8.5.10`; `npm audit fix --force` đề xuất downgrade breaking nên chưa xử lý | vừa | Block 05 audit sweep |
 
 ## 9. Handoff & Next Block
-- Block 04 đọc JWT secret và webhook secret từ `/opt/vietarr/.env`.
-- Gotcha: WS với Next.js App Router cần custom server hoặc route handler — xác nhận ở spike ngày 1.
-- Radarr/Sonarr webhook URL phải là `https://vietarr.home.arpa/api/v1/webhook/arr` (qua Caddy).
+- Block 04 đọc `JWT_SECRET` và `WEBHOOK_SECRET` từ `/opt/vietarr/.env`; không hardcode secret và không log ra report.
+- Core WS endpoint nội bộ là `ws://core:3000/ws`; qua Caddy là `/ws` cùng domain Dashboard.
+- Caddy phải route `/ws` tới Core với WebSocket Upgrade headers. Với Caddy `reverse_proxy /ws core:3000` đã tự forward `Connection: Upgrade` và `Upgrade: websocket`.
+- Radarr/Sonarr webhook URL pattern hiện tại: `${CORE_PUBLIC_URL}/api/v1/webhook/arr`. Nếu Fshare Bridge cần webhook hoặc callback riêng, dùng cùng pattern `/api/v1/<bridge-path>` sau Caddy và verify bằng secret header tương ứng.
+- Gotcha: WS với Next.js App Router cần Core/custom server giữ connection; route handler Next không host WS ổn định — xác nhận ở spike ngày 1.
 - **Next: BLOCK-04 — Fshare Bridge.**
