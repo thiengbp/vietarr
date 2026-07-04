@@ -92,33 +92,45 @@ Thêm vào `docs/API.md` mục B3 (đã có draft, freeze khi Release):
 - [x] Web: RequestButton + progress inline + Toast
 - [x] Web: Admin panel (user list, invite link generator, rate limit setting)
 - [x] Web: `useWebSocket` hook + card update realtime
-- [ ] Smoke test end-to-end: login → request phim → WS nhận event → card cập nhật
+- [x] Smoke test end-to-end: login → request phim → WS nhận event → card cập nhật
 
 ## 6. QA
 ### Definition of Done
-- [ ] Đăng ký qua invite link → login → request phim → Radarr nhận lệnh (không trigger download thật, monitored=false vẫn tạo record)
-- [ ] Vượt rate limit → UI hiện "Đã đạt giới hạn", không tạo request mới
-- [ ] Request phim đã có (`hasFile=true`) → UI hiện "Đã có trong thư viện"
-- [ ] Webhook Radarr `OnImport` gửi về Core → WS broadcast → Toast hiện trong 2s trên Dashboard đang mở
-- [ ] Admin đổi rate_limit_per_day → áp dụng ngay không cần restart
-- [ ] Lighthouse mobile ≥85 (trang Discover)
-- [ ] `grep -r "password\|token\|secret" install-report.txt` → exit 1 (không lộ secret)
-- [ ] Chạy trên VM test 106 snapshot clean với stack từ Block 01
+- [x] Đăng ký qua invite link → login → request phim → Radarr nhận lệnh (không trigger download thật, monitored=false vẫn tạo record)
+- [x] Vượt rate limit → UI hiện "Đã đạt giới hạn", không tạo request mới
+- [x] Request phim đã có (`hasFile=true`) → UI hiện "Đã có trong thư viện"
+- [x] Webhook Radarr `OnImport` gửi về Core → WS broadcast → Toast hiện trong 2s trên Dashboard đang mở
+- [x] Admin đổi rate_limit_per_day → áp dụng ngay không cần restart
+- [x] Lighthouse mobile ≥85 (trang Discover)
+- [x] `grep -r "password\|token\|secret" install-report.txt` → exit 1 (không lộ secret)
+- [x] Chạy trên VM test 106 snapshot clean với stack từ Block 01
 
 ### Test cases
 | Mã | Kịch bản | Kết quả mong đợi | Trạng thái |
 |----|----------|------------------|-----------| 
-| T1 | Happy path: invite → register → login → request | Radarr nhận lệnh, WS event về Dashboard | ⬜ |
-| T2 | Invite token hết hạn / dùng lần 2 | 410, UI hiện lỗi rõ | ⬜ |
-| T3 | Vượt rate limit | 429, "Đã đạt giới hạn hôm nay" | ⬜ |
-| T4 | Request phim hasFile=true | 409, "Đã có trong thư viện" | ⬜ |
-| T5 | Webhook sai secret | 401, không broadcast WS | ⬜ |
-| T6 | WS mất kết nối → reconnect | Client tự reconnect, nhận event tiếp theo | ⬜ |
-| T7 | Admin đổi rate limit → member bị ảnh hưởng ngay | Không cần restart | ⬜ |
+| T1 | Happy path: invite → register → login → request | Radarr nhận lệnh, WS event về Dashboard | ✅ |
+| T2 | Invite token hết hạn / dùng lần 2 | 410, UI hiện lỗi rõ | ✅ |
+| T3 | Vượt rate limit | 429, "Đã đạt giới hạn hôm nay" | ✅ |
+| T4 | Request phim hasFile=true | 409, "Đã có trong thư viện" | ✅ |
+| T5 | Webhook sai secret | 401, không broadcast WS | ✅ |
+| T6 | WS mất kết nối → reconnect | Client tự reconnect, nhận event tiếp theo | ✅ |
+| T7 | Admin đổi rate limit → member bị ảnh hưởng ngay | Không cần restart | ✅ |
 
 ## 7. Release
 - Phiên bản: `v0.3.0`. Tag git + ghi CHANGELOG.
 - Người duyệt: Jooh.
+- DoD chính thức chạy trên VM test 106 sau rollback snapshot `clean` ngày 2026-07-04; chưa tag.
+- Stack Block 01 install verify: `Summary: PASS=12 FAIL=0`; containers caddy/qBittorrent/Prowlarr/Radarr/Sonarr/Bazarr/FlareSolverr/Recyclarr healthy; Prowlarr↔Radarr/Sonarr, Radarr↔qBittorrent, Sonarr↔qBittorrent PASS.
+- T1 PASS: invite/register `200`, request `202`, Radarr movie id `2`, `monitored=false`, `searchForMovie=false`, WS event `{type:"grab", mediaId:"movie-2", title:"Fight Club"}`.
+- T2 PASS: dùng lại invite token trả `410`, error code `invite_invalid`, message `Invite token is invalid or already used`.
+- T3 PASS: rate limit trả `429`, message `Đã đạt giới hạn hôm nay`.
+- T4 PASS: Radarr seed `hasFile=true`; request trả `409`, message `Đã có trong thư viện`.
+- T5 PASS: webhook sai `X-Vietarr-Webhook-Secret` trả `401`, `broadcastDelta=0`.
+- T6 PASS: WS reconnect xong nhận event `{type:"import", status:"available", progress:100}`.
+- T7 PASS: admin đổi `rate_limit_per_day` không restart; sau tăng limit request trả `202`, sau hạ limit request kế tiếp trả `429`.
+- Toast PASS: Playwright mobile mở Dashboard Discover, trigger `OnImport`, toast `Fight Club đã tải xong` visible trong `2000ms`.
+- Lighthouse mobile Discover PASS: performance `100`; FCP `0.8s`, LCP `1.8s`, TBT `50ms`, CLS `0.003`.
+- Secret leak check PASS: `grep -Eri "password|token|secret" /opt/vietarr/install-report.txt` không có match.
 
 ## 8. Technical Debt
 | Nợ | Mức độ | Trả ở |
