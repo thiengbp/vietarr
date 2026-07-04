@@ -36,6 +36,7 @@ export function loadConfig() {
     jwtSecret: env.JWT_SECRET || env.CORE_JWT_SECRET || "",
     webhookSecret: env.WEBHOOK_SECRET || env.CORE_WEBHOOK_SECRET || "",
     webhookUrl: env.CORE_WEBHOOK_URL || "",
+    tmdbApiKey: env.TMDB_API_KEY || "",
     mediaRoot,
     publicBaseUrl: env.CORE_PUBLIC_URL || "http://localhost:3000",
     smbBaseUrl: env.SMB_BASE_URL || "smb://vietarr.home.arpa/media",

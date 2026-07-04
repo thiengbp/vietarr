@@ -57,6 +57,29 @@ Quy ước B2:
 ## B3 — write + auth (draft, freeze khi B3 Release)
 POST `/auth/login` · GET `/discover/trending` · GET `/discover/search?q=` · POST `/request` {tmdbId, type, quality} · GET `/request/:id/progress` · POST `/webhook/arr` (Radarr/Sonarr gọi vào) · WS `/ws?token=`.
 
+### B3 auth/admin
+| Method | Path | Auth | Body | Trả về |
+|--------|------|------|------|--------|
+| POST | `/auth/login` | none | `{username,password}` | `{token,user:{id,username,role}}` |
+| POST | `/auth/register` | none | `{inviteToken,username,password}` | `{token,user}` |
+| POST | `/auth/invite/create` | admin | `{role?}` | `{inviteToken,inviteUrl,expiresAt}` |
+| GET | `/admin/users` | admin | none | `[{id,username,role,createdAt}]` |
+| GET | `/settings` | JWT | none | `{rate_limit_per_day}` |
+| PATCH | `/settings` | admin | `{rate_limit_per_day}` | `{rate_limit_per_day}` |
+
+JWT gửi qua `Authorization: Bearer <token>`. Member chỉ được xem settings; admin tạo invite, xem user list và sửa settings.
+
+### B3 discover/request
+| Method | Path | Auth | Trả về |
+|--------|------|------|--------|
+| GET | `/discover/trending?page=` | JWT | `{results:[DiscoverItem], page, totalPages}` |
+| GET | `/discover/search?q=&page=` | JWT | `{results:[DiscoverItem], page, totalPages}` |
+| GET | `/quality-profiles?type=movie|series` | JWT | `[{id,name}]` |
+| POST | `/request` | JWT | `{requestId,status,mediaId}` |
+| GET | `/request/:id/progress` | JWT | `{status,progress,eta}` |
+
+`DiscoverItem = {tmdbId,type,title,year,overview,posterUrl,backdropUrl,status}`. `POST /request` nhận `{tmdbId,type:'movie'|'series',qualityProfileId}`. Trùng media đã có trả `409`; vượt rate limit trả `429`.
+
 ### B3 realtime WS
 Client kết nối `ws://core:3000/ws?token=<JWT>` hoặc qua Caddy `wss://vietarr.home.arpa/ws?token=<JWT>`.
 

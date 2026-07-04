@@ -83,15 +83,15 @@ Thêm vào `docs/API.md` mục B3 (đã có draft, freeze khi Release):
 - [x] Spike: xác nhận `ws` npm package chạy được với Next.js App Router (server component không giữ WS — cần route handler riêng hoặc custom server)
 - [x] SQLite schema: users, invites, request_log, settings
 - [x] `auth.mjs`: JWT, invite flow, bcrypt
-- [ ] `users.mjs` + `settings.mjs`
-- [ ] `requests.mjs`: rate limit, POST → *arr, BR-2
+- [x] `users.mjs` + `settings.mjs`
+- [x] `requests.mjs`: rate limit, POST → *arr, BR-2
 - [x] `webhook.mjs` + `ws.mjs`: nhận event, broadcast
 - [x] Tự đăng ký webhook vào Radarr/Sonarr khi Core start (idempotent)
-- [ ] Web: login page, register via invite, auth middleware (redirect nếu chưa login)
-- [ ] Web: Discover tab (TMDB trending + search + nút Tải về)
-- [ ] Web: RequestButton + progress inline + Toast
-- [ ] Web: Admin panel (user list, invite link generator, rate limit setting)
-- [ ] Web: `useWebSocket` hook + card update realtime
+- [x] Web: login page, register via invite, auth middleware (redirect nếu chưa login)
+- [x] Web: Discover tab (TMDB trending + search + nút Tải về)
+- [x] Web: RequestButton + progress inline + Toast
+- [x] Web: Admin panel (user list, invite link generator, rate limit setting)
+- [x] Web: `useWebSocket` hook + card update realtime
 - [ ] Smoke test end-to-end: login → request phim → WS nhận event → card cập nhật
 
 ## 6. QA
@@ -127,6 +127,7 @@ Thêm vào `docs/API.md` mục B3 (đã có draft, freeze khi Release):
 | Admin duyệt từng request | thấp | backlog |
 | Xóa phim từ Dashboard | thấp | backlog |
 | Email notification | thấp | backlog |
+| `npm audit --omit=dev` trong `web/` báo 2 moderate qua `next -> postcss <8.5.10`; `npm audit fix --force` đề xuất downgrade breaking nên chưa xử lý | vừa | Block 05 audit sweep |
 
 ## 9. Handoff & Next Block
 - Block 04 đọc JWT secret và webhook secret từ `/opt/vietarr/.env`.

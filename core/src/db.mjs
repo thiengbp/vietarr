@@ -77,6 +77,18 @@ export function createAppDb(path) {
     VALUES (?, ?, ?)
     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
   `);
+  const listUsersStmt = db.prepare("SELECT id, username, role, created_at FROM users ORDER BY id ASC");
+  const countRequestsTodayStmt = db.prepare(`
+    SELECT COUNT(*) AS count
+    FROM request_log
+    WHERE user_id = ? AND created_at >= ?
+  `);
+  const insertRequestStmt = db.prepare(`
+    INSERT INTO request_log (id, user_id, media_type, tmdb_id, arr_id, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const getRequestStmt = db.prepare("SELECT * FROM request_log WHERE id = ?");
+  const updateRequestStmt = db.prepare("UPDATE request_log SET arr_id = ?, status = ?, updated_at = ? WHERE id = ?");
 
   return {
     db,
@@ -97,6 +109,14 @@ export function createAppDb(path) {
     getUserById(id) {
       return getUserByIdStmt.get(id) || null;
     },
+    listUsers() {
+      return listUsersStmt.all().map((user) => ({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        createdAt: user.created_at
+      }));
+    },
     createInvite({ tokenHash, role = "member", expiresAt, createdByUserId = null }) {
       const result = createInviteStmt.run(tokenHash, role, expiresAt, createdByUserId, nowIso());
       return getInviteStmt.get(tokenHash) || { id: result.lastInsertRowid, token_hash: tokenHash, role, expires_at: expiresAt };
@@ -116,6 +136,21 @@ export function createAppDb(path) {
     },
     setSetting(key, value) {
       setSettingStmt.run(key, String(value), nowIso());
+    },
+    countRequestsSince({ userId, since }) {
+      return countRequestsTodayStmt.get(userId, since).count;
+    },
+    createRequestLog({ id, userId, mediaType, tmdbId, arrId = null, status = "queued" }) {
+      const ts = nowIso();
+      insertRequestStmt.run(id, userId, mediaType, tmdbId, arrId, status, ts, ts);
+      return getRequestStmt.get(id);
+    },
+    updateRequestLog({ id, arrId = null, status }) {
+      updateRequestStmt.run(arrId, status, nowIso(), id);
+      return getRequestStmt.get(id);
+    },
+    getRequestLog(id) {
+      return getRequestStmt.get(id) || null;
     }
   };
 }
