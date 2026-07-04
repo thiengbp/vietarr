@@ -137,8 +137,8 @@ Realtime rules:
 - `progress` là số nguyên `0..100`. Client không tự suy diễn % từ UI nếu server đã gửi field này.
 - WS client phải auto reconnect; reconnect xong client gọi lại REST read API để rehydrate state, vì Core không replay event history trong B3.
 
-## B4 — Fshare Bridge (draft)
-GET `/torznab/api?t=search&q=` (Prowlarr gọi) · Giả lập qBittorrent WebUI API: `/fakeqb/api/v2/auth/login`, `/fakeqb/api/v2/torrents/add|info|delete` (Radarr/Sonarr gọi như download client thật).
+## B4 — packaging/release
+Block 04 không thêm Core API mới. Mọi API public hiện tại vẫn là B2/B3 contract.
 
 ## Quy ước lỗi
 JSON `{error: {code, message}}`; 400 input, 401/403 auth, 404, 502 khi app *arr downstream lỗi (kèm `upstream`).

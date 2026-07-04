@@ -10,6 +10,7 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 - BLOCK-03 realtime: Core WebSocket server, Radarr/Sonarr webhook receiver with `X-Vietarr-Webhook-Secret`, queue polling progress events, import/grab broadcasts, and idempotent webhook registration.
 - BLOCK-03 Dashboard write UI: login/register, Discover tab, RequestButton with quality selection and inline progress, toast on import, WS reconnect hook, and Admin panel.
 - Official BLOCK-03 DoD evidence for T1-T7 on VM 106 snapshot `clean`, Toast within 2s, Lighthouse mobile Discover `100`, and secret leak check PASS.
+- Roadmap updated after release: Fshare Bridge removed from the block plan; packaging/release work is now Block 04.
 
 ### Fixed
 - Preserve Core error codes in JSON responses.

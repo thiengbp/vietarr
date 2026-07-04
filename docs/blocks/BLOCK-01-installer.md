@@ -100,7 +100,7 @@ Wiring qua API:
 ## 8. Technical Debt
 | Nợ | Mức độ | Trả ở |
 |----|--------|-------|
-| Installer ghi vào `/opt/vietarr`, nên trên Ubuntu sạch cần chạy bằng `sudo` hoặc qua one-liner có quyền root. | Low | Block 05 docs public |
+| Installer ghi vào `/opt/vietarr`, nên trên Ubuntu sạch cần chạy bằng `sudo` hoặc qua one-liner có quyền root. | Low | Block 04 docs public |
 | qBittorrent port/VPN chưa cấu hình theo Non-Goal Block 01; installer giữ mặc định và không thêm indexer cụ thể. | Medium | Block sau khi có ADR VPN/indexer |
 
 ## 9. Handoff & Next Block

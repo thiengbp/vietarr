@@ -4,13 +4,13 @@
 
 ## Thành phần
 - **installer/** — CLI cài đặt + zero-touch wiring (B1). Sinh `/opt/vietarr/.env`, `/opt/vietarr/docker-compose.yml`, appdata local và `install-report.txt`; chi tiết: BLOCK-01 §3.
-- **core/** — Vietarr Core: Node.js/Express/SQLite. Auth, request, Fshare Bridge (Torznab + giả API qBittorrent), HTTP stream proxy, webhook từ *arr. (B3, B4)
+- **core/** — Vietarr Core: Node.js/Express/SQLite. Auth, request, HTTP stream proxy, websocket realtime, webhook từ *arr. (B2, B3)
 - **web/** — Dashboard Next.js 15: thư viện, khám phá TMDB, request, play menu. (B2, B3)
 - **installer/templates/** — template docker-compose, Caddyfile, recyclarr (installer render ra /opt/vietarr trên máy đích).
 
 ## Luồng dữ liệu chính
 1. **Thư viện:** Dashboard → Core → Radarr/Sonarr API (poster, metadata, trạng thái file). Không quét file trực tiếp.
-2. **Request phim:** Dashboard → Core → Radarr `POST /api/v3/movie` → Prowlarr tìm (torrent + Fshare Torznab) → qBittorrent hoặc Fshare Downloader tải vào `/data/torrents/<cat>` → Radarr import (hardlink) → Bazarr gắn phụ đề Việt → webhook về Core → Dashboard cập nhật.
+2. **Request phim:** Dashboard → Core → Radarr `POST /api/v3/movie` → Prowlarr tìm torrent → qBittorrent tải vào `/data/torrents/<cat>` → Radarr import (hardlink) → Bazarr gắn phụ đề Việt → webhook về Core → Dashboard cập nhật.
 3. **Phát:** Infuse/app SMB đọc thẳng từ NAS. Dashboard chỉ đưa deep link / SMB path / HTTP stream (Core proxy, Range requests, không transcode).
 
 ## Nguyên tắc bất biến

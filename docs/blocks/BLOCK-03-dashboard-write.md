@@ -18,7 +18,7 @@ Từ điện thoại: tìm phim bất kỳ (TMDB tiếng Việt) → bấm "Tả
 - Webhook endpoint tự đăng ký vào Radarr/Sonarr khi Core khởi động (idempotent).
 
 **Non-Goals (CẤM làm ở block này):**
-- KHÔNG Fshare (Block 04).
+- KHÔNG Fshare.
 - KHÔNG email/OAuth/SSO.
 - KHÔNG duyệt-request nhiều cấp (admin approve từng request — backlog).
 - KHÔNG push notification mobile/PWA (backlog).
@@ -139,12 +139,12 @@ Thêm vào `docs/API.md` mục B3 (đã có draft, freeze khi Release):
 | Admin duyệt từng request | thấp | backlog |
 | Xóa phim từ Dashboard | thấp | backlog |
 | Email notification | thấp | backlog |
-| `npm audit --omit=dev` trong `web/` báo 2 moderate qua `next -> postcss <8.5.10`; `npm audit fix --force` đề xuất downgrade breaking nên chưa xử lý | vừa | Block 05 audit sweep |
+| `npm audit --omit=dev` trong `web/` báo 2 moderate qua `next -> postcss <8.5.10`; `npm audit fix --force` đề xuất downgrade breaking nên chưa xử lý | vừa | Block 04 audit sweep |
 
 ## 9. Handoff & Next Block
-- Block 04 đọc `JWT_SECRET` và `WEBHOOK_SECRET` từ `/opt/vietarr/.env`; không hardcode secret và không log ra report.
+- Block 04 đóng gói phát hành cần document rõ `JWT_SECRET` và `WEBHOOK_SECRET` nằm trong `/opt/vietarr/.env`; không hardcode secret và không log ra report.
 - Core WS endpoint nội bộ là `ws://core:3000/ws`; qua Caddy là `/ws` cùng domain Dashboard.
 - Caddy phải route `/ws` tới Core với WebSocket Upgrade headers. Với Caddy `reverse_proxy /ws core:3000` đã tự forward `Connection: Upgrade` và `Upgrade: websocket`.
-- Radarr/Sonarr webhook URL pattern hiện tại: `${CORE_PUBLIC_URL}/api/v1/webhook/arr`. Nếu Fshare Bridge cần webhook hoặc callback riêng, dùng cùng pattern `/api/v1/<bridge-path>` sau Caddy và verify bằng secret header tương ứng.
+- Radarr/Sonarr webhook URL pattern hiện tại: `${CORE_PUBLIC_URL}/api/v1/webhook/arr`; release docs phải ghi đây là callback nội bộ cần secret header `X-Vietarr-Webhook-Secret`.
 - Gotcha: WS với Next.js App Router cần Core/custom server giữ connection; route handler Next không host WS ổn định — xác nhận ở spike ngày 1.
-- **Next: BLOCK-04 — Fshare Bridge.**
+- **Next: BLOCK-04 — Đóng gói phát hành.**

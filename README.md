@@ -14,7 +14,7 @@
 | Thư mục | Vai trò |
 |---|---|
 | `installer/` | CLI cài đặt + zero-touch wiring |
-| `core/` | Vietarr Core: auth, Fshare Bridge, Torznab, stream proxy |
+| `core/` | Vietarr Core: auth, request API, websocket realtime, stream proxy |
 | `web/` | Dashboard Next.js |
 | `docs/` | Toàn bộ tài liệu (blocks, ADR, API, design system) |
 

@@ -1,5 +1,5 @@
-# BLOCK-05 — ĐÓNG GÓI PHÁT HÀNH v1.0
-> **Trạng thái:** PLANNED · **Phụ thuộc:** B1–B4
+# BLOCK-04 — ĐÓNG GÓI PHÁT HÀNH v1.0
+> **Trạng thái:** PLANNED · **Phụ thuộc:** B1–B3
 
 ## 1. Vision
 Người lạ (biết dùng terminal cơ bản) cài được VietArr trong 15 phút không cần hỏi ai. Repo public chuyên nghiệp.
