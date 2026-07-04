@@ -241,7 +241,7 @@ export function createServer(options = {}) {
       return res.status(502).json({ error: { code: "upstream_unavailable", message: error.message, upstream: error.upstream } });
     }
     const status = error.status || 500;
-    res.status(status).set(error.headers || {}).json({ error: { code: status === 404 ? "not_found" : "internal_error", message: error.message } });
+    res.status(status).set(error.headers || {}).json({ error: { code: error.code || (status === 404 ? "not_found" : "internal_error"), message: error.message } });
   });
 
   return app;
