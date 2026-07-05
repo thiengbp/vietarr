@@ -1,5 +1,5 @@
 # BLOCK-04 — ĐÓNG GÓI PHÁT HÀNH v1.0
-> **Trạng thái:** PLANNED
+> **Trạng thái:** ACTIVE
 > **Phụ thuộc:** B1 installer freeze · B2 read API freeze · B3 write/auth/realtime freeze
 > **Bắt đầu / Kết thúc:** TBD / TBD
 
@@ -73,31 +73,31 @@ User Ubuntu 24.04 host
 - **BR-9:** Docs must not advertise Fshare Bridge as an implemented roadmap block. ADR-001 remains historical and superseded by ADR-005.
 
 ## 5. Implementation
-- [ ] ADR/docs alignment
-  - [ ] ADR-005 accepted and ADR-001 marked superseded.
-  - [ ] README/ARCHITECTURE/API/GLOSSARY reviewed for current feature claims.
+- [x] ADR/docs alignment
+  - [x] ADR-005 accepted and ADR-001 marked superseded.
+  - [x] README/ARCHITECTURE/API/GLOSSARY reviewed for current feature claims.
 - [ ] Public documentation
-  - [ ] README song ngữ with quickstart, architecture, screenshots, support matrix.
+  - [x] README song ngữ with quickstart, architecture, screenshots, support matrix.
   - [ ] `docs/user/install.md`, `docs/user/upgrade.md`, `docs/user/backup-restore.md`, `docs/user/troubleshooting.md`.
-  - [ ] Security docs updated for public reporting and secret handling.
+  - [x] Security docs updated for public reporting and secret handling.
 - [ ] Repository hygiene
-  - [ ] Add `LICENSE`.
-  - [ ] Add `CONTRIBUTING.md`.
-  - [ ] Add `.github/ISSUE_TEMPLATE/*` and `.github/pull_request_template.md`.
+  - [x] Add `LICENSE`.
+  - [x] Add `CONTRIBUTING.md`.
+  - [x] Add `.github/ISSUE_TEMPLATE/*` and `.github/pull_request_template.md`.
 - [ ] Installer release hardening
-  - [ ] Document one-liner install.
-  - [ ] Generate and publish `installer/vietarr.sh.sha256`.
+  - [x] Document one-liner install.
+  - [x] Generate and publish `installer/vietarr.sh.sha256`.
   - [ ] Ensure install report redacts secrets.
   - [ ] Add uninstall/rollback instructions.
-- [ ] CI/release automation
-  - [ ] GitHub Actions for `core npm run check`.
-  - [ ] GitHub Actions for `web npm run build`.
-  - [ ] GitHub Actions for `npm audit --omit=dev --audit-level=high` in `core/` and `web/`.
+- [x] CI/release automation
+  - [x] GitHub Actions for `core npm run check`.
+  - [x] GitHub Actions for `web npm run build`.
+  - [x] GitHub Actions for `npm audit --omit=dev --audit-level=high` in `core/` and `web/`.
   - [ ] Optional docs/link check if stable.
 - [ ] Security audit
-  - [ ] Run gitleaks or equivalent history scan.
+  - [x] Run gitleaks or equivalent history scan.
   - [ ] Run secret grep against generated reports/docs.
-  - [ ] Record npm audit summary.
+  - [x] Record npm audit summary.
 - [ ] External install validation
   - [ ] Clean VM/person A install evidence.
   - [ ] Clean VM/person B install evidence.
@@ -146,11 +146,29 @@ User Ubuntu 24.04 host
 - GitHub Release phải attach/checksum `installer/vietarr.sh.sha256` và link evidence `docs/release/v1.0.0/`.
 - Người duyệt: Jooh.
 
+### Implementation progress 2026-07-04
+- Group 1 Hardening:
+  - `core`: `npm audit --omit=dev` → `found 0 vulnerabilities`.
+  - `web`: initial audit found 2 moderate `postcss <8.5.10` via `next`; `npm audit fix` without `--force` could not fix and suggested a breaking downgrade. Resolved by `postcss` override to `^8.5.10`; follow-up `npm audit --omit=dev` → `found 0 vulnerabilities`.
+  - Gitleaks history scan: initial FAIL, 2 redacted `generic-api-key` hits in `docs/blocks/BLOCK-02-dashboard-read.md:21` at commits `6124edf` and `c4427e1`. Fingerprints added to `.gitleaksignore` because they are test keys; follow-up gitleaks scan → `no leaks found`. Must rotate before repo public.
+  - Added MIT `LICENSE`.
+- Group 2 Packaging:
+  - Added `installer/install.sh` bootstrap: downloads `vietarr.sh` + `vietarr.sh.sha256`, verifies checksum, then execs installer.
+  - Added `installer/vietarr.sh.sha256` for current installer payload.
+  - Ubuntu 24.04 container smoke: `VIETARR_RELEASE_BASE=file:///repo/installer bash /repo/installer/install.sh --help` → `vietarr.sh: OK` and installer usage printed.
+  - Added `.github/workflows/ci.yml` for Core/Web check, lint/build/test, audit high gate.
+  - Added `.github/workflows/release.yml` for tag-triggered GitHub Release artifacts.
+- Group 3 Docs:
+  - Rewrote `README.md` bilingual VI/EN with quickstart, checksum path, support matrix and screenshot placeholder.
+  - Added `CONTRIBUTING.md`.
+  - Added bug/feature issue templates.
+
 ## 8. Technical Debt
 | Nợ | Mức độ | Trả ở |
 |----|--------|-------|
 | Fshare Bridge bị loại khỏi roadmap chính nhưng ADR-001 giữ lại làm lịch sử thiết kế | vừa | Backlog sau v1.0 nếu có ADR mới |
-| `web/` có thể còn moderate advisory qua Next/PostCSS nếu upstream chưa có bản vá an toàn | vừa | B4 audit step hoặc post-v1 patch |
+| Hai test API key trong lịch sử git đã được suppress bằng `.gitleaksignore`; vẫn phải rotate trước khi repo public | cao | B4 security cleanup trước release |
+| `web/` lint còn 7 warning không chặn CI (`<img>` và anonymous default export) | thấp | Post-v1 UI/code cleanup |
 | Chưa có test automation full browser install từ public one-liner | thấp | Post-v1 CI hardening |
 | Video demo cần cập nhật lại khi UI text thay đổi | thấp | Mỗi release public |
 

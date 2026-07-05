@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">VietArr dashboard screenshot placeholder</title>
+  <desc id="desc">Placeholder image for the public README until the v1.0 screenshot is captured.</desc>
+  <rect width="1280" height="720" fill="#111827"/>
+  <rect x="64" y="64" width="1152" height="592" rx="24" fill="#18212f" stroke="#334155" stroke-width="2"/>
+  <text x="96" y="132" fill="#f8fafc" font-family="Arial, sans-serif" font-size="44" font-weight="700">VietArr Dashboard</text>
+  <text x="96" y="176" fill="#94a3b8" font-family="Arial, sans-serif" font-size="24">Screenshot placeholder for v1.0 release docs</text>
+  <g fill="#263244" stroke="#475569" stroke-width="2">
+    <rect x="96" y="232" width="144" height="216" rx="10"/>
+    <rect x="264" y="232" width="144" height="216" rx="10"/>
+    <rect x="432" y="232" width="144" height="216" rx="10"/>
+    <rect x="600" y="232" width="144" height="216" rx="10"/>
+    <rect x="768" y="232" width="144" height="216" rx="10"/>
+    <rect x="936" y="232" width="144" height="216" rx="10"/>
+  </g>
+  <g fill="#94a3b8" font-family="Arial, sans-serif" font-size="20">
+    <text x="96" y="496">Library</text>
+    <text x="264" y="496">Discover</text>
+    <text x="432" y="496">Requests</text>
+    <text x="600" y="496">Realtime</text>
+    <text x="768" y="496">Admin</text>
+    <text x="936" y="496">Infuse</text>
+  </g>
+</svg>
