@@ -4,6 +4,7 @@ set -Eeuo pipefail
 VIETARR_VERSION="${VIETARR_VERSION:-main}"
 VIETARR_REPO="${VIETARR_REPO:-thiengbp/vietarr}"
 VIETARR_RELEASE_BASE="${VIETARR_RELEASE_BASE:-https://raw.githubusercontent.com/$VIETARR_REPO/$VIETARR_VERSION/installer}"
+VIETARR_INSTALLER_DIR="${VIETARR_INSTALLER_DIR:-/opt/vietarr/installer}"
 
 die() {
   echo "ERROR: $*" >&2
@@ -18,7 +19,7 @@ download() {
   local url="$1"
   local target="$2"
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$url" -o "$target"
+    curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL "$url" -o "$target"
     return
   fi
   if command -v wget >/dev/null 2>&1; then
@@ -40,17 +41,23 @@ verify_checksum() {
   die "Missing command: sha256sum or shasum"
 }
 
-install_cli_link() {
+install_payload() {
   local target="/usr/local/bin/vietarr"
   if [ "$(id -u)" -eq 0 ]; then
-    ln -sf "$PWD/vietarr.sh" "$target"
+    mkdir -p "$VIETARR_INSTALLER_DIR"
+    cp -R "$PWD"/. "$VIETARR_INSTALLER_DIR"/
+    chmod +x "$VIETARR_INSTALLER_DIR/vietarr.sh" "$VIETARR_INSTALLER_DIR/verify.sh"
+    ln -sf "$VIETARR_INSTALLER_DIR/vietarr.sh" "$target"
     return
   fi
   if command -v sudo >/dev/null 2>&1; then
-    sudo ln -sf "$PWD/vietarr.sh" "$target"
+    sudo mkdir -p "$VIETARR_INSTALLER_DIR"
+    sudo cp -R "$PWD"/. "$VIETARR_INSTALLER_DIR"/
+    sudo chmod +x "$VIETARR_INSTALLER_DIR/vietarr.sh" "$VIETARR_INSTALLER_DIR/verify.sh"
+    sudo ln -sf "$VIETARR_INSTALLER_DIR/vietarr.sh" "$target"
     return
   fi
-  echo "WARN: cannot create $target because sudo is not available." >&2
+  die "Cannot install VietArr CLI because sudo is not available."
 }
 
 main() {
@@ -71,8 +78,8 @@ main() {
   cd "$tmp_dir"
   verify_checksum
   chmod +x vietarr.sh verify.sh
-  install_cli_link
-  exec bash "$tmp_dir/vietarr.sh" "$@"
+  install_payload
+  exec bash "$VIETARR_INSTALLER_DIR/vietarr.sh" "$@"
 }
 
 main "$@"
