@@ -40,6 +40,19 @@ verify_checksum() {
   die "Missing command: sha256sum or shasum"
 }
 
+install_cli_link() {
+  local target="/usr/local/bin/vietarr"
+  if [ "$(id -u)" -eq 0 ]; then
+    ln -sf "$PWD/vietarr.sh" "$target"
+    return
+  fi
+  if command -v sudo >/dev/null 2>&1; then
+    sudo ln -sf "$PWD/vietarr.sh" "$target"
+    return
+  fi
+  echo "WARN: cannot create $target because sudo is not available." >&2
+}
+
 main() {
   need_cmd mktemp
   local tmp_dir
@@ -58,6 +71,7 @@ main() {
   cd "$tmp_dir"
   verify_checksum
   chmod +x vietarr.sh verify.sh
+  install_cli_link
   exec bash "$tmp_dir/vietarr.sh" "$@"
 }
 

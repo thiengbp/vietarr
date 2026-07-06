@@ -5,6 +5,14 @@ VIETARR_HOME="${VIETARR_HOME:-/opt/vietarr}"
 COMPOSE="${VIETARR_COMPOSE:-docker compose}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+if [ "$(id -u)" -ne 0 ]; then
+  if command -v sudo >/dev/null 2>&1; then
+    exec sudo -E bash "$0" "$@"
+  fi
+  echo "ERROR: VietArr installer must run as root, and sudo is not available." >&2
+  exit 1
+fi
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -71,6 +79,16 @@ validate_media_path() {
     return
   fi
   die "UID 1000 cannot write to $MEDIA_ROOT. Fix NFS/permission before install."
+}
+
+validate_domain_suffix() {
+  case "$DOMAIN_SUFFIX" in
+    *[[:space:]]*) die "DOMAIN_SUFFIX must not contain whitespace: $DOMAIN_SUFFIX" ;;
+  esac
+  case "$DOMAIN_SUFFIX" in
+    *.arpa|*.lan) ;;
+    *) echo "WARN: DOMAIN_SUFFIX should normally end with .arpa or .lan: $DOMAIN_SUFFIX" >&2 ;;
+  esac
 }
 
 render_template() {
@@ -178,9 +196,11 @@ install_command() {
   [ -n "$QBIT_USER" ] || die "QBIT_USER is required"
   [ -n "$QBIT_PASS" ] || QBIT_PASS="$(random_secret)"
 
+  validate_domain_suffix
   validate_media_path
 
   mkdir -p "$VIETARR_HOME/appdata"/{qbittorrent,prowlarr,radarr,sonarr,bazarr,recyclarr}
+  chown -R 1000:1000 "$VIETARR_HOME" 2>/dev/null || true
   chown -R 1000:1000 "$VIETARR_HOME/appdata/recyclarr" 2>/dev/null || true
   write_env_once
   load_installed_env
@@ -188,6 +208,7 @@ install_command() {
   render_template "$SCRIPT_DIR/templates/docker-compose.yml.tpl" "$VIETARR_HOME/docker-compose.yml"
   render_template "$SCRIPT_DIR/templates/Caddyfile.tpl" "$VIETARR_HOME/Caddyfile"
   render_template "$SCRIPT_DIR/templates/recyclarr.yml.tpl" "$VIETARR_HOME/appdata/recyclarr/recyclarr.yml"
+  chown -R 1000:1000 "$VIETARR_HOME" 2>/dev/null || true
   chown -R 1000:1000 "$VIETARR_HOME/appdata/recyclarr" 2>/dev/null || true
 
   cd "$VIETARR_HOME"
