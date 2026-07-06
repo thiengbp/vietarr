@@ -1,4 +1,61 @@
 services:
+  core:
+    image: ${VIETARR_CORE_IMAGE:-ghcr.io/thiengbp/vietarr-core:main}
+    container_name: vietarr-core
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      - VIETARR_HOME=/opt/vietarr
+      - PORT=3000
+      - RADARR_URL=http://radarr:7878
+      - SONARR_URL=http://sonarr:8989
+      - BAZARR_URL=http://bazarr:6767
+      - QBIT_URL=http://qbittorrent:8080
+      - CORE_PUBLIC_URL=https://api.vietarr.{{DOMAIN_SUFFIX}}
+      - CORE_WEBHOOK_URL=https://api.vietarr.{{DOMAIN_SUFFIX}}/api/v1/webhook/arr
+      - SMB_BASE_URL=smb://vietarr.{{DOMAIN_SUFFIX}}/media
+    volumes:
+      - ./appdata/core:/opt/vietarr
+      - ./.env:/opt/vietarr/.env:ro
+      - {{MEDIA_ROOT}}:/data:ro
+    expose:
+      - "3000"
+    depends_on:
+      radarr:
+        condition: service_healthy
+      sonarr:
+        condition: service_healthy
+      bazarr:
+        condition: service_healthy
+    networks:
+      - vietarr
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+
+  web:
+    image: ${VIETARR_WEB_IMAGE:-ghcr.io/thiengbp/vietarr-web:main}
+    container_name: vietarr-web
+    restart: unless-stopped
+    environment:
+      - CORE_API_URL=http://core:3000/api/v1
+      - NEXT_PUBLIC_CORE_API_URL=/api/v1
+    expose:
+      - "3000"
+    depends_on:
+      core:
+        condition: service_healthy
+    networks:
+      - vietarr
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+
   caddy:
     image: caddy:2-alpine
     container_name: vietarr-caddy

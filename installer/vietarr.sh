@@ -115,6 +115,8 @@ BAZARR_API_KEY=
 QBIT_USER=$QBIT_USER
 QBIT_PASS=$QBIT_PASS
 TMDB_API_KEY=$TMDB_API_KEY
+JWT_SECRET=$(random_secret)
+WEBHOOK_SECRET=$(random_secret)
 MEDIA_ROOT=$MEDIA_ROOT
 DOMAIN_SUFFIX=$DOMAIN_SUFFIX
 TZ=$TZ
@@ -133,7 +135,7 @@ load_installed_env() {
 
 wait_compose_healthy() {
   local deadline=$((SECONDS + 180))
-  local services="caddy qbittorrent prowlarr radarr sonarr bazarr flaresolverr recyclarr"
+  local services="caddy core web qbittorrent prowlarr radarr sonarr bazarr flaresolverr recyclarr"
   while [ "$SECONDS" -lt "$deadline" ]; do
     local ok=1
     for service in $services; do
@@ -199,7 +201,7 @@ install_command() {
   validate_domain_suffix
   validate_media_path
 
-  mkdir -p "$VIETARR_HOME/appdata"/{qbittorrent,prowlarr,radarr,sonarr,bazarr,recyclarr}
+  mkdir -p "$VIETARR_HOME/appdata"/{core,qbittorrent,prowlarr,radarr,sonarr,bazarr,recyclarr}
   chown -R 1000:1000 "$VIETARR_HOME" 2>/dev/null || true
   chown -R 1000:1000 "$VIETARR_HOME/appdata/recyclarr" 2>/dev/null || true
   write_env_once
@@ -232,6 +234,7 @@ install_command() {
     -v "$SCRIPT_DIR/lib/wiring.mjs:/tmp/wiring.mjs:ro" \
     node:22-alpine node /tmp/wiring.mjs
   rm -f "$qbit_bootstrap_env"
+  $COMPOSE restart core web
   $COMPOSE restart bazarr
   if ! wait_compose_healthy; then
     rollback_with_logs

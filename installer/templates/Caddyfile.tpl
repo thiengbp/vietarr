@@ -4,6 +4,12 @@
 
 vietarr.{{DOMAIN_SUFFIX}} {
 	tls internal
+	handle /api/* {
+		reverse_proxy core:3000
+	}
+	handle /ws* {
+		reverse_proxy core:3000
+	}
 	reverse_proxy web:3000
 }
 

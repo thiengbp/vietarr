@@ -34,6 +34,10 @@ export function createServer(options = {}) {
 
   app.use(express.json());
 
+  app.get("/healthz", (_req, res) => {
+    res.json({ ok: true });
+  });
+
   function requireAuth(req, _res, next) {
     try {
       const header = req.get("authorization") || "";
