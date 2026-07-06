@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-VIETARR_VERSION="${VIETARR_VERSION:-v1.0.0}"
-VIETARR_REPO="${VIETARR_REPO:-vietarr/vietarr}"
+VIETARR_VERSION="${VIETARR_VERSION:-main}"
+VIETARR_REPO="${VIETARR_REPO:-thiengbp/vietarr}"
 VIETARR_RELEASE_BASE="${VIETARR_RELEASE_BASE:-https://raw.githubusercontent.com/$VIETARR_REPO/$VIETARR_VERSION/installer}"
 
 die() {
