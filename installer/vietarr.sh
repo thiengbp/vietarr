@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 VIETARR_HOME="${VIETARR_HOME:-/opt/vietarr}"
 COMPOSE="${VIETARR_COMPOSE:-docker compose}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 if [ "$(id -u)" -ne 0 ]; then
   if command -v sudo >/dev/null 2>&1; then
