@@ -163,6 +163,68 @@ User Ubuntu 24.04 host
   - Added `CONTRIBUTING.md`.
   - Added bug/feature issue templates.
 
+### DoD Official 2026-07-06 — PASS (no tag, no public repo)
+- Source under test:
+  - Branch: `dod/block-04`
+  - Implementation commit: `acecb2fbf3339c9d5fbd89757efc48536ed6aa29`
+  - GitHub PR used only to run CI: `https://github.com/thiengbp/vietarr/pull/1`
+- D1 one-liner install on clean Ubuntu 24.04 VM:
+  - VM: Proxmox VM `106`, rolled back to snapshot `clean`, SSH target `jooh@10.10.10.51`.
+  - OS/runtime: `Ubuntu 24.04.4 LTS`, Docker `29.1.3`, Docker Compose `2.40.3`.
+  - Media root: `/mnt/media/data`, writable by UID `1000`, TRaSH folders present.
+  - Repo is still private, so public raw GitHub returned `404` as expected before release. To avoid making the repo public, the installer payload from exact commit `acecb2f` was served on the VM through a temporary local HTTP mirror:
+    ```bash
+    curl -fsSL http://127.0.0.1:8899/install.sh \
+      | sudo VIETARR_RELEASE_BASE=http://127.0.0.1:8899 bash -s -- install --non-interactive --media-path /mnt/media/data
+    ```
+  - Bootstrap evidence: `vietarr.sh: OK`.
+  - Result: `INSTALL_EXIT=0`, `INSTALL_SECONDS=93`.
+  - Verify report:
+    ```text
+    PASS hardlink - inode=408
+    PASS container:caddy - healthy
+    PASS container:qbittorrent - healthy
+    PASS container:prowlarr - healthy
+    PASS container:radarr - healthy
+    PASS container:sonarr - healthy
+    PASS container:bazarr - healthy
+    PASS container:flaresolverr - healthy
+    PASS container:recyclarr - healthy
+    PASS Prowlarr↔Radarr/Sonarr
+    PASS Radarr↔qBittorrent
+    PASS Sonarr↔qBittorrent
+    Summary: PASS=12 FAIL=0
+    ```
+  - `install-report.txt` secret grep: `REPORT_SECRET_GREP=CLEAN`.
+- D2 GitHub Actions CI on branch test:
+  - Branch pushed: `dod/block-04`.
+  - Draft PR: `https://github.com/thiengbp/vietarr/pull/1`.
+  - Run: `https://github.com/thiengbp/vietarr/actions/runs/28764243021`.
+  - Event: `pull_request`; head SHA `acecb2fbf3339c9d5fbd89757efc48536ed6aa29`; conclusion `success`.
+  - Jobs:
+    - `Core`: success; install dependencies, check syntax, test, audit high policy all success.
+    - `Web`: success; install dependencies, lint, build, test, audit high policy all success.
+- D3 gitleaks clean:
+  - Command: `gitleaks detect --source /repo --redact --exit-code=1` via official Docker image.
+  - Result: `36 commits scanned`, `no leaks found`.
+- D4 npm audit high policy:
+  - `core`: `npm audit --omit=dev --audit-level=high` → `found 0 vulnerabilities`.
+  - `web`: `npm audit --omit=dev --audit-level=high` → `found 0 vulnerabilities`.
+- D5 README render on GitHub:
+  - README branch URL: `https://github.com/thiengbp/vietarr/blob/dod/block-04/README.md`.
+  - GitHub API confirms README exists on branch: `README.md 6b20bc6`.
+  - GitHub API confirms screenshot placeholder asset exists on branch: `dashboard-placeholder.svg a197aeb`.
+  - GitHub Markdown API render checks:
+    ```text
+    h1 VietArr: True
+    placeholder image alt: True
+    placeholder asset path: True
+    tables rendered: True
+    quickstart command: True
+    table_count: 2
+    html_bytes: 4926
+    ```
+
 ## 8. Technical Debt
 | Nợ | Mức độ | Trả ở |
 |----|--------|-------|
