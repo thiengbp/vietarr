@@ -2,6 +2,16 @@
 	admin off
 }
 
+vietarr.{{DOMAIN_SUFFIX}} {
+	tls internal
+	reverse_proxy web:3000
+}
+
+api.vietarr.{{DOMAIN_SUFFIX}} {
+	tls internal
+	reverse_proxy core:3000
+}
+
 radarr.{{DOMAIN_SUFFIX}} {
 	reverse_proxy radarr:7878
 }
