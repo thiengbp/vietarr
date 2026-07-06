@@ -46,12 +46,18 @@ main() {
   tmp_dir="$(mktemp -d)"
   trap 'rm -rf "$tmp_dir"' EXIT
 
+  mkdir -p "$tmp_dir/lib" "$tmp_dir/templates"
   download "$VIETARR_RELEASE_BASE/vietarr.sh" "$tmp_dir/vietarr.sh"
   download "$VIETARR_RELEASE_BASE/vietarr.sh.sha256" "$tmp_dir/vietarr.sh.sha256"
+  download "$VIETARR_RELEASE_BASE/verify.sh" "$tmp_dir/verify.sh"
+  download "$VIETARR_RELEASE_BASE/lib/wiring.mjs" "$tmp_dir/lib/wiring.mjs"
+  download "$VIETARR_RELEASE_BASE/templates/Caddyfile.tpl" "$tmp_dir/templates/Caddyfile.tpl"
+  download "$VIETARR_RELEASE_BASE/templates/docker-compose.yml.tpl" "$tmp_dir/templates/docker-compose.yml.tpl"
+  download "$VIETARR_RELEASE_BASE/templates/recyclarr.yml.tpl" "$tmp_dir/templates/recyclarr.yml.tpl"
 
   cd "$tmp_dir"
   verify_checksum
-  chmod +x vietarr.sh
+  chmod +x vietarr.sh verify.sh
   exec bash "$tmp_dir/vietarr.sh" "$@"
 }
 
