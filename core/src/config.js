@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 const DEFAULT_HOME = "/opt/vietarr";
 
@@ -27,12 +27,16 @@ export function loadConfig() {
   const fileEnv = readDotEnv(envPath);
   const env = { ...fileEnv, ...process.env };
   const mediaRoot = env.MEDIA_ROOT || "/mnt/media/data";
+  const cachePath = env.CORE_CACHE_PATH || join(home, "core-cache.sqlite");
+  const dbPath = env.CORE_DB_PATH || join(home, "core.sqlite");
+  mkdirSync(dirname(cachePath), { recursive: true });
+  mkdirSync(dirname(dbPath), { recursive: true });
   return {
     port: Number(env.PORT || env.CORE_PORT || 3000),
     home,
     envPath,
-    cachePath: env.CORE_CACHE_PATH || join(home, "core-cache.sqlite"),
-    dbPath: env.CORE_DB_PATH || join(home, "core.sqlite"),
+    cachePath,
+    dbPath,
     jwtSecret: env.JWT_SECRET || env.CORE_JWT_SECRET || "",
     webhookSecret: env.WEBHOOK_SECRET || env.CORE_WEBHOOK_SECRET || "",
     webhookUrl: env.CORE_WEBHOOK_URL || "",
@@ -53,7 +57,9 @@ export function loadConfig() {
       apiKey: env.BAZARR_API_KEY || ""
     },
     qbit: {
-      baseUrl: env.QBIT_URL || "http://127.0.0.1:8080"
+      baseUrl: env.QBIT_URL || "http://127.0.0.1:8080",
+      username: env.QBIT_USER || "",
+      password: env.QBIT_PASS || ""
     }
   };
 }

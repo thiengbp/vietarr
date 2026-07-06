@@ -8,15 +8,25 @@ services:
     environment:
       - VIETARR_HOME=/opt/vietarr
       - PORT=3000
-      - RADARR_URL=http://radarr:7878
-      - SONARR_URL=http://sonarr:8989
-      - BAZARR_URL=http://bazarr:6767
-      - QBIT_URL=http://qbittorrent:8080
+      - CORE_CACHE_PATH=/app/data/core-cache.sqlite
+      - CORE_DB_PATH=/app/data/core.sqlite
+      - RADARR_URL=${RADARR_URL:-http://radarr:7878}
+      - RADARR_API_KEY=${RADARR_API_KEY:-}
+      - SONARR_URL=${SONARR_URL:-http://sonarr:8989}
+      - SONARR_API_KEY=${SONARR_API_KEY:-}
+      - BAZARR_URL=${BAZARR_URL:-http://bazarr:6767}
+      - BAZARR_API_KEY=${BAZARR_API_KEY:-}
+      - QBIT_URL=${QBIT_URL:-http://qbittorrent:8080}
+      - QBIT_USER=${QBIT_USER:-}
+      - QBIT_PASS=${QBIT_PASS:-}
+      - JWT_SECRET=${JWT_SECRET:-}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-}
       - CORE_PUBLIC_URL=https://api.vietarr.{{DOMAIN_SUFFIX}}
       - CORE_WEBHOOK_URL=https://api.vietarr.{{DOMAIN_SUFFIX}}/api/v1/webhook/arr
       - SMB_BASE_URL=smb://vietarr.{{DOMAIN_SUFFIX}}/media
     volumes:
       - ./appdata/core:/opt/vietarr
+      - ${VIETARR_HOME:-/opt/vietarr}/data/core:/app/data
       - ./.env:/opt/vietarr/.env:ro
       - {{MEDIA_ROOT}}:/data:ro
     expose:

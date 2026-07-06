@@ -108,6 +108,7 @@ write_env_once() {
   fi
   umask 077
   cat > "$VIETARR_HOME/.env" <<EOF
+VIETARR_HOME=$VIETARR_HOME
 RADARR_API_KEY=
 SONARR_API_KEY=
 PROWLARR_API_KEY=
@@ -201,7 +202,7 @@ install_command() {
   validate_domain_suffix
   validate_media_path
 
-  mkdir -p "$VIETARR_HOME/appdata"/{core,qbittorrent,prowlarr,radarr,sonarr,bazarr,recyclarr}
+  mkdir -p "$VIETARR_HOME/appdata"/{core,qbittorrent,prowlarr,radarr,sonarr,bazarr,recyclarr} "$VIETARR_HOME/data/core"
   chown -R 1000:1000 "$VIETARR_HOME" 2>/dev/null || true
   chown -R 1000:1000 "$VIETARR_HOME/appdata/recyclarr" 2>/dev/null || true
   write_env_once
