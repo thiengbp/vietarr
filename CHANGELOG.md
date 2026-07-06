@@ -3,6 +3,23 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-06
+### Added
+- BLOCK-04 release packaging hardening: MIT `LICENSE`, `CONTRIBUTING.md`, GitHub issue templates, PR template, and bilingual README with screenshot placeholder.
+- Public installer bootstrap `installer/install.sh` with checksum verification before executing `vietarr.sh`.
+- GitHub Actions CI for Core/Web install, check/lint/build/test, and high-severity audit policy on pull requests.
+- Tag-triggered release workflow that builds installer checksum and GitHub Release artifacts.
+- `.gitleaksignore` suppressions for two historical Block 02 test API keys, documented in `SECURITY.md` with mandatory rotate-before-public note.
+- Official BLOCK-04 DoD evidence: VM 106 clean install `INSTALL_EXIT=0`, `PASS=12 FAIL=0`, CI pass, gitleaks clean, npm audit high policy clean, checksum verify PASS, and README GitHub render PASS.
+
+### Fixed
+- Fetch all required installer payload files in `installer/install.sh` (`verify.sh`, `lib/wiring.mjs`, and templates) so one-liner installs work without a local repo checkout.
+- Remove current-feature README/SECURITY claims for Fshare Bridge after ADR-005 removed it from the v1.0 roadmap.
+
+### Notes
+- Repo remains private by Jooh decision; no public repository setting was changed for this release.
+- Before any future public release, rotate the historical Block 02 test API keys documented in `SECURITY.md`.
+
 ## [0.3.0] - 2026-07-04
 ### Added
 - BLOCK-03 auth: JWT login, invite-only registration, bcrypt password hashing, admin invite creation, user list, and configurable `rate_limit_per_day`.

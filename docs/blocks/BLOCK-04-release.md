@@ -1,7 +1,7 @@
 # BLOCK-04 — ĐÓNG GÓI PHÁT HÀNH v1.0
-> **Trạng thái:** ACTIVE
+> **Trạng thái:** RELEASED
 > **Phụ thuộc:** B1 installer freeze · B2 read API freeze · B3 write/auth/realtime freeze
-> **Bắt đầu / Kết thúc:** TBD / TBD
+> **Bắt đầu / Kết thúc:** 2026-07-04 / 2026-07-06
 
 ## 1. Vision (đích đến)
 Người dùng mới biết dùng terminal cơ bản có thể đọc README, chạy một lệnh cài đặt, truy cập Dashboard, đăng nhập, xem thư viện, request phim và tự xử lý lỗi phổ biến mà không cần hỏi riêng Jooh. Repo đủ sạch để public: có license, contributing, issue templates, CI, changelog, security checklist, release tag và bằng chứng cài đặt ngoài lab.
