@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const BCRYPT_COST = 12;
+const BCRYPT_COST = 10;
 const JWT_TTL = "7d";
 const INVITE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -46,6 +46,12 @@ export function createAuthService({ db, jwtSecret, publicBaseUrl = "" }) {
   }
 
   return {
+    async bootstrapInitialAdmin({ username = "admin", password } = {}) {
+      if (!username || !password) return { created: false, reason: "missing_credentials" };
+      if (db.getUserByUsername(username)) return { created: false, reason: "user_exists" };
+      const user = db.createUser({ username, passwordHash: await hashPassword(password), role: "admin" });
+      return { created: true, user: sanitizeUser(user) };
+    },
     async createInvite({ createdByUserId = null, role = "member" } = {}) {
       const inviteToken = crypto.randomBytes(32).toString("base64url");
       const expiresAt = new Date(Date.now() + INVITE_TTL_MS).toISOString();

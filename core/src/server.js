@@ -31,6 +31,7 @@ export function createServer(options = {}) {
   app.locals.config = config;
   app.locals.db = db;
   app.locals.hub = hub;
+  app.locals.auth = auth;
 
   app.use(express.json());
 
@@ -255,6 +256,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const config = loadConfig();
   const hub = createRealtimeHub();
   const app = createServer({ config, cache: createCache(config.cachePath), hub });
+  const adminBootstrap = await app.locals.auth.bootstrapInitialAdmin(config.admin);
+  console.log(`Admin bootstrap: ${adminBootstrap.reason || (adminBootstrap.created ? "created" : "skipped")}`);
   const server = http.createServer(app);
   attachWebSocketServer(server, { hub });
   server.listen(config.port, () => {

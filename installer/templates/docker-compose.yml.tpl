@@ -21,6 +21,8 @@ services:
       - QBIT_PASS=${QBIT_PASS:-}
       - JWT_SECRET=${JWT_SECRET:-}
       - WEBHOOK_SECRET=${WEBHOOK_SECRET:-}
+      - VIETARR_ADMIN_USER=${VIETARR_ADMIN_USER:-admin}
+      - VIETARR_ADMIN_PASSWORD=${VIETARR_ADMIN_PASSWORD:-}
       - CORE_PUBLIC_URL=https://api.vietarr.{{DOMAIN_SUFFIX}}
       - CORE_WEBHOOK_URL=https://api.vietarr.{{DOMAIN_SUFFIX}}/api/v1/webhook/arr
       - SMB_BASE_URL=smb://vietarr.{{DOMAIN_SUFFIX}}/media

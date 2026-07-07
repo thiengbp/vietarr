@@ -41,6 +41,10 @@ export function loadConfig() {
     webhookSecret: env.WEBHOOK_SECRET || env.CORE_WEBHOOK_SECRET || "",
     webhookUrl: env.CORE_WEBHOOK_URL || "",
     tmdbApiKey: env.TMDB_API_KEY || "",
+    admin: {
+      username: env.VIETARR_ADMIN_USER || env.ADMIN_USER || "admin",
+      password: env.VIETARR_ADMIN_PASSWORD || env.ADMIN_PASSWORD || env.QBIT_PASS || ""
+    },
     mediaRoot,
     publicBaseUrl: env.CORE_PUBLIC_URL || "http://localhost:3000",
     smbBaseUrl: env.SMB_BASE_URL || "smb://vietarr.home.arpa/media",
