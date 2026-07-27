@@ -9,6 +9,7 @@ Từ tab Khám phá, người dùng chọn một phim TMDB, xem ngay các releas
 **Trong scope:**
 - Kết nối Bitmagnet vào Prowlarr bằng Generic Torznab.
 - Core tìm release qua Prowlarr và chỉ trả dữ liệu đã làm sạch, không lộ API key.
+- Tìm cả phim lẻ/phim bộ từ TMDB; phim bộ được xem và sao chép Magnet từ danh mục TV của Bitmagnet.
 - Modal chọn nguồn tải responsive, hỗ trợ bàn phím/focus/ESC.
 - Chọn release cụ thể, thêm/monitor phim trong Radarr và push release sang download client.
 - Giữ luồng Radarr tự chọn làm phương án dự phòng.
@@ -16,6 +17,7 @@ Từ tab Khám phá, người dùng chọn một phim TMDB, xem ngay các releas
 **Non-Goals:**
 - Không scrape YTS, BT4G, BTDig hoặc website bên thứ ba.
 - Không tự thêm tracker announce vào magnet.
+- Không tự động gửi release phim bộ sang Sonarr trong B5; phim bộ chỉ hiển thị nguồn/Magnet.
 - Không thay đổi contract B2/B3 đã freeze.
 - Không xác minh hay cấp quyền bản quyền nội dung; người dùng chỉ được tải nội dung họ có quyền truy cập.
 - Không mở API key Prowlarr/Bitmagnet ra Web.
@@ -51,6 +53,7 @@ Xem `docs/API.md`, mục B5.
 - Production Prowlarr indexer `Bitmagnet` dùng Torznab endpoint nội bộ của NAS và đã sync sang Radarr/Sonarr.
 - Prowlarr API key đã được rotate ngày 2026-07-27 sau khi proxy URL xuất hiện trong log chẩn đoán; Radarr/Sonarr indexer credentials đã cập nhật và Test PASS.
 - Sau khi phát hiện credential drift trên production, khóa Prowlarr đã được đồng bộ lại sang indexer Bitmagnet của Radarr/Sonarr; cả hai bài Test đều PASS và không có torrent giả trong qBittorrent.
-- TMDB search chuẩn hóa tên release có dấu chấm/gạch dưới; Radarr release rejection được trả về ngay và request thủ công không có queue quá 90 giây chuyển `not_found` thay vì treo `queued`.
+- TMDB search chuẩn hóa tên release có dấu chấm/gạch dưới và gộp cả phim lẻ/phim bộ; phim bộ hiển thị Magnet từ Prowlarr TV nhưng chưa tự động gửi Sonarr trong B5.
+- Radarr release rejection được trả về ngay và request thủ công không có queue quá 90 giây chuyển `not_found` thay vì treo `queued`.
 - Webhook callback dùng URL nội bộ `http://core:3000/api/v1/webhook/arr`; không đi vòng qua home-domain DNS/Caddy TLS.
 - Block giữ trạng thái ACTIVE đến khi production smoke hoàn tất và Jooh gửi đúng câu `APPROVED BLOCK 05`.

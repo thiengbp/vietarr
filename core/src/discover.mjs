@@ -56,15 +56,24 @@ export function createDiscoverService({ config, fetchImpl = fetch }) {
     async search({ q, page = 1 } = {}) {
       const query = normalizeSearchQuery(q);
       if (!query) return { page: 1, totalPages: 1, results: [] };
-      const data = await fetchTmdb({ config, path: "/search/movie", params: { query, page, include_adult: "false" }, fetchImpl });
+      const [movies, series] = await Promise.all([
+        fetchTmdb({ config, path: "/search/movie", params: { query, page, include_adult: "false" }, fetchImpl }),
+        fetchTmdb({ config, path: "/search/tv", params: { query, page, include_adult: "false" }, fetchImpl })
+      ]);
       return {
-        page: data.page || page,
-        totalPages: data.total_pages || 1,
-        results: (data.results || []).map((item) => mapItem(item, "movie"))
+        page: movies.page || series.page || page,
+        totalPages: Math.max(movies.total_pages || 1, series.total_pages || 1),
+        results: [
+          ...(movies.results || []).map((item) => mapItem(item, "movie")),
+          ...(series.results || []).map((item) => mapItem(item, "series"))
+        ]
       };
     },
     async movie(tmdbId, { language = "vi-VN" } = {}) {
       return fetchTmdb({ config, path: `/movie/${encodeURIComponent(tmdbId)}`, params: { language }, fetchImpl });
+    },
+    async series(tmdbId, { language = "vi-VN" } = {}) {
+      return fetchTmdb({ config, path: `/tv/${encodeURIComponent(tmdbId)}`, params: { language }, fetchImpl });
     }
   };
 }

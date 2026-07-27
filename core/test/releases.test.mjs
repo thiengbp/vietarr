@@ -93,3 +93,33 @@ test("release search falls back to the English TMDB title", async () => {
   assert.deepEqual(queries, ["千香", "Thiên Hương", "The Eternal Fragrance"]);
   assert.equal(response.results.length, 1);
 });
+
+test("series release search uses TMDB TV metadata and Prowlarr TV category", async () => {
+  let requestedUrl;
+  const seriesDiscover = {
+    series: async (_id, options = {}) => options.language === "en-US"
+      ? { id: 251600, name: "The Eternal Fragrance", original_name: "千香", first_air_date: "2026-01-01" }
+      : { id: 251600, name: "Thiên Hương", original_name: "千香", first_air_date: "2026-01-01" }
+  };
+  const fetchImpl = async (input) => {
+    requestedUrl = new URL(input);
+    if (requestedUrl.searchParams.get("query") !== "The Eternal Fragrance") return json([]);
+    return json([{
+      guid: "0123456789abcdef0123456789abcdef01234567",
+      title: "The.Eternal.Fragrance.2026.S01E01-E22.2160p.WEB-DL",
+      indexerId: 1,
+      indexer: "Bitmagnet",
+      protocol: "torrent",
+      infoHash: "0123456789abcdef0123456789abcdef01234567",
+      seeders: 8
+    }]);
+  };
+
+  const service = createReleaseService({ config, discover: seriesDiscover, fetchImpl });
+  const response = await service.searchMediaReleases({ tmdbId: 251600, type: "series" });
+
+  assert.equal(requestedUrl.searchParams.get("type"), "tvsearch");
+  assert.deepEqual(requestedUrl.searchParams.getAll("categories"), ["5000"]);
+  assert.equal(response.results.length, 1);
+  assert.equal(response.results[0].source, "Bitmagnet");
+});

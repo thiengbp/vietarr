@@ -45,14 +45,14 @@ function titleTokens(value) {
     .filter((token) => token.length > 1 && !stopWords.has(token));
 }
 
-function matchesMovie(title, movie) {
+function matchesMedia(title, media) {
   const candidateTokens = new Set(titleTokens(title));
-  const expectedTokenSets = [...new Set((movie.searchTitles || [movie.original_title, movie.title]).filter(Boolean))]
+  const expectedTokenSets = [...new Set((media.searchTitles || [media.original_title, media.original_name, media.title, media.name]).filter(Boolean))]
     .map(titleTokens)
     .filter((tokens) => tokens.length > 0);
   if (expectedTokenSets.length > 0 && !expectedTokenSets.some((tokens) => tokens.every((token) => candidateTokens.has(token)))) return false;
 
-  const expectedYear = String(movie.release_date || "").slice(0, 4);
+  const expectedYear = String(media.release_date || media.first_air_date || "").slice(0, 4);
   const candidateYears = String(title || "").match(/\b(?:19|20)\d{2}\b/g) || [];
   return !expectedYear || candidateYears.length === 0 || candidateYears.includes(expectedYear);
 }
@@ -83,14 +83,14 @@ function mapRelease(row) {
   };
 }
 
-async function searchProwlarr({ config, query, fetchImpl }) {
+async function searchProwlarr({ config, query, type = "movie", fetchImpl }) {
   if (!config.prowlarr?.baseUrl || !config.prowlarr?.apiKey) {
     throw releaseError(503, "download_source_unavailable", "Chưa cấu hình Prowlarr cho VietArr Core");
   }
   const url = new URL(`${config.prowlarr.baseUrl.replace(/\/$/, "")}/api/v1/search`);
   url.searchParams.set("query", query);
-  url.searchParams.set("type", "movie");
-  url.searchParams.append("categories", "2000");
+  url.searchParams.set("type", type === "series" ? "tvsearch" : "movie");
+  url.searchParams.append("categories", type === "series" ? "5000" : "2000");
   url.searchParams.set("limit", "50");
   let response;
   try {
@@ -109,26 +109,41 @@ async function searchProwlarr({ config, query, fetchImpl }) {
 }
 
 export function createReleaseService({ config, discover, fetchImpl = fetch }) {
-  async function searchMovieReleases({ tmdbId }) {
+  async function searchMediaReleases({ tmdbId, type = "movie" }) {
     const id = Number(tmdbId);
     if (!Number.isInteger(id) || id <= 0) {
       throw releaseError(400, "invalid_tmdb_id", "tmdbId không hợp lệ");
     }
+    if (!["movie", "series"].includes(type)) {
+      throw releaseError(400, "unsupported_type", "Loại nội dung chưa được hỗ trợ");
+    }
 
-    const movie = await discover.movie(id);
-    let englishMovie = null;
+    const isSeries = type === "series";
+    const lookup = isSeries ? discover.series : discover.movie;
+    if (typeof lookup !== "function") {
+      throw releaseError(400, "unsupported_type", "Loại nội dung chưa được hỗ trợ");
+    }
+    const media = await lookup(id);
+    let englishMedia = null;
     try {
-      englishMovie = await discover.movie(id, { language: "en-US" });
+      englishMedia = await lookup(id, { language: "en-US" });
     } catch (_error) {
       // The localized title is still sufficient when the optional English lookup fails.
     }
-    const queries = [...new Set([movie.original_title, movie.title, englishMovie?.title].map((value) => String(value || "").trim()).filter(Boolean))];
-    const movieWithAliases = { ...movie, searchTitles: queries };
+    const queries = [...new Set([
+      media.original_title,
+      media.original_name,
+      media.title,
+      media.name,
+      englishMedia?.title,
+      englishMedia?.name
+    ].map((value) => String(value || "").trim()).filter(Boolean))];
+    const mediaWithAliases = { ...media, searchTitles: queries };
     let results = [];
     for (const query of queries) {
-      const rows = await searchProwlarr({ config, query, fetchImpl });
+      const rows = await searchProwlarr({ config, query, type, fetchImpl });
       results = rows
-        .filter((row) => matchesMovie(row.title, movieWithAliases))
+        .filter((row) => matchesMedia(row.title, mediaWithAliases))
         .map(mapRelease)
         .filter(Boolean);
       if (results.length > 0) break;
@@ -141,6 +156,10 @@ export function createReleaseService({ config, discover, fetchImpl = fetch }) {
     return { source: "Prowlarr", results };
   }
 
+  async function searchMovieReleases({ tmdbId }) {
+    return searchMediaReleases({ tmdbId, type: "movie" });
+  }
+
   async function findMovieRelease({ tmdbId, id }) {
     const result = await searchMovieReleases({ tmdbId });
     const release = result.results.find((item) => item.id === id);
@@ -150,5 +169,5 @@ export function createReleaseService({ config, discover, fetchImpl = fetch }) {
     return release;
   }
 
-  return { searchMovieReleases, findMovieRelease };
+  return { searchMediaReleases, searchMovieReleases, findMovieRelease };
 }

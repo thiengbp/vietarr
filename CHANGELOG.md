@@ -8,7 +8,7 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 - Add authenticated `GET /discover/:tmdbId/releases` and `POST /request/release` APIs without changing frozen B2/B3 contracts.
 
 ### Fixed
-- Normalize dotted/underscored release-style movie names before TMDB search, so queries such as `The.Eternal.Fragrance` return the matching title.
+- Search both TMDB movies and series, normalize dotted/underscored release-style names, and expose clean Bitmagnet Magnet links for series without presenting an unsupported Sonarr download action.
 - Surface Radarr release rejection immediately and expire untracked manual requests after 90 seconds instead of leaving the Dashboard at “Đang tìm nguồn tải…” indefinitely.
 - Trigger a real monitored Radarr `MoviesSearch` only when an automatic indexer and enabled download client exist; otherwise return a clear source/client configuration error.
 - Report request state from the real Radarr command, queue, and movie file instead of presenting `queued` as fake download progress.

@@ -26,13 +26,14 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busyId, setBusyId] = useState("");
+  const isSeries = item.type === "series";
   busyRef.current = busyId;
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError("");
-    apiFetch(`/discover/${encodeURIComponent(item.tmdbId)}/releases`)
+    apiFetch(`/discover/${encodeURIComponent(item.tmdbId)}/releases?type=${encodeURIComponent(item.type || "movie")}`)
       .then((data) => {
         if (active) setReleases(data.results || []);
       })
@@ -45,7 +46,7 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
     return () => {
       active = false;
     };
-  }, [item.tmdbId]);
+  }, [item.tmdbId, item.type]);
 
   useEffect(() => {
     previousFocusRef.current = document.activeElement;
@@ -197,15 +198,17 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
                     >
                       Sao chép
                     </button>
-                    <button
-                      type="button"
-                      aria-label={`Tải release ${release.title}`}
-                      className="min-h-11 rounded-md bg-accent px-4 text-sm font-semibold text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-overlay disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={Boolean(busyId) || release.seeders === 0}
-                      onClick={() => requestRelease(release)}
-                    >
-                      {busyId === release.id ? "Đang gửi…" : release.seeders === 0 ? "Không có seed" : "Tải bản này"}
-                    </button>
+                    {!isSeries ? (
+                      <button
+                        type="button"
+                        aria-label={`Tải release ${release.title}`}
+                        className="min-h-11 rounded-md bg-accent px-4 text-sm font-semibold text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-overlay disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={Boolean(busyId) || release.seeders === 0}
+                        onClick={() => requestRelease(release)}
+                      >
+                        {busyId === release.id ? "Đang gửi…" : release.seeders === 0 ? "Không có seed" : "Tải bản này"}
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               </article>
@@ -217,15 +220,21 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
         </div>
 
         <footer className="flex flex-col gap-2 border-t border-subtle px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p className="text-xs text-secondary">Không muốn chọn thủ công? Radarr có thể tự ưu tiên theo profile.</p>
-          <button
-            type="button"
-            className="min-h-11 rounded-md border border-subtle bg-overlay px-4 text-sm font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
-            disabled={Boolean(busyId)}
-            onClick={requestAutomatic}
-          >
-            {busyId === "automatic" ? "Đang gửi…" : "Để Radarr tự chọn"}
-          </button>
+          {isSeries ? (
+            <p className="text-xs text-secondary">Phim bộ hiện hỗ trợ mở hoặc sao chép Magnet; tải tự động sẽ được bổ sung sau.</p>
+          ) : (
+            <>
+              <p className="text-xs text-secondary">Không muốn chọn thủ công? Radarr có thể tự ưu tiên theo profile.</p>
+              <button
+                type="button"
+                className="min-h-11 rounded-md border border-subtle bg-overlay px-4 text-sm font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+                disabled={Boolean(busyId)}
+                onClick={requestAutomatic}
+              >
+                {busyId === "automatic" ? "Đang gửi…" : "Để Radarr tự chọn"}
+              </button>
+            </>
+          )}
         </footer>
       </section>
     </div>

@@ -135,7 +135,7 @@ export function createServer(options = {}) {
 
   app.get("/api/v1/discover/:tmdbId/releases", requireAuth, async (req, res, next) => {
     try {
-      res.json(await releases.searchMovieReleases({ tmdbId: req.params.tmdbId }));
+      res.json(await releases.searchMediaReleases({ tmdbId: req.params.tmdbId, type: req.query.type || "movie" }));
     } catch (error) {
       next(error);
     }

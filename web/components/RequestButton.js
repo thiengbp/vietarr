@@ -35,6 +35,7 @@ export function RequestButton({ item, state, onChooseSource, qualityProfiles = n
   const available = state?.status === "available";
   const terminalError = state?.status === "not_found" || state?.status === "failed";
   const canRequest = !queued && !downloading && !available;
+  const isSeries = item.type === "series";
 
   return (
     <div className="mt-3 space-y-2">
@@ -59,25 +60,27 @@ export function RequestButton({ item, state, onChooseSource, qualityProfiles = n
       {terminalError ? <p className="text-xs text-danger">{state?.error || (state.status === "not_found" ? "Không tìm thấy nguồn phù hợp" : "Tải phim thất bại")}</p> : null}
       {canRequest ? (
         <div className="flex gap-2">
-          <select
-            className="min-w-0 flex-1 rounded-md border border-subtle bg-overlay px-2 py-2 text-xs text-primary"
-            value={profileId}
-            onChange={(event) => setProfileId(event.target.value)}
-          >
-            {profiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>
-                {profile.name}
-              </option>
-            ))}
-          </select>
+          {!isSeries ? (
+            <select
+              className="min-w-0 flex-1 rounded-md border border-subtle bg-overlay px-2 py-2 text-xs text-primary"
+              value={profileId}
+              onChange={(event) => setProfileId(event.target.value)}
+            >
+              {profiles.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.name}
+                </option>
+              ))}
+            </select>
+          ) : null}
           <button
-            className="min-h-11 rounded-md bg-accent px-3 py-2 text-xs font-semibold text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50"
+            className={`min-h-11 rounded-md bg-accent px-3 py-2 text-xs font-semibold text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50 ${isSeries ? "w-full" : ""}`}
             type="button"
             aria-label={`Chọn nguồn tải cho ${item.title}`}
-            disabled={!profileId}
-            onClick={() => onChooseSource?.(item, Number(profileId))}
+            disabled={!isSeries && !profileId}
+            onClick={() => onChooseSource?.(item, isSeries ? null : Number(profileId))}
           >
-            Tải
+            {isSeries ? "Tìm nguồn" : "Tải"}
           </button>
         </div>
       ) : null}
