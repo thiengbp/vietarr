@@ -23,6 +23,13 @@ function mapItem(item, type = "movie") {
   };
 }
 
+export function normalizeSearchQuery(query) {
+  return String(query || "")
+    .replace(/[._]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 async function fetchTmdb({ config, path, params = {}, fetchImpl = fetch }) {
   if (!config.tmdbApiKey) throw tmdbError(503, "TMDB API key is not configured");
   const url = new URL(`${TMDB_BASE}${path}`);
@@ -47,8 +54,9 @@ export function createDiscoverService({ config, fetchImpl = fetch }) {
       };
     },
     async search({ q, page = 1 } = {}) {
-      if (!q) return { page: 1, totalPages: 1, results: [] };
-      const data = await fetchTmdb({ config, path: "/search/movie", params: { query: q, page, include_adult: "false" }, fetchImpl });
+      const query = normalizeSearchQuery(q);
+      if (!query) return { page: 1, totalPages: 1, results: [] };
+      const data = await fetchTmdb({ config, path: "/search/movie", params: { query, page, include_adult: "false" }, fetchImpl });
       return {
         page: data.page || page,
         totalPages: data.total_pages || 1,

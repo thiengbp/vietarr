@@ -82,6 +82,8 @@ JWT gửi qua `Authorization: Bearer <token>`. Member chỉ được xem setting
 
 `DiscoverItem = {tmdbId,type,title,year,overview,posterUrl,backdropUrl,status}`. `POST /request` nhận `{tmdbId,type:'movie'|'series',qualityProfileId}`. Trùng media đã có trả `409`; vượt rate limit trả `429`.
 
+`GET /discover/search` chuẩn hóa dấu chấm và dấu gạch dưới trong tên release thành khoảng trắng trước khi gọi TMDB (ví dụ `The.Eternal.Fragrance` → `The Eternal Fragrance`).
+
 Quy ước request tải thật:
 - Trước khi nhận request, Core xác nhận Radarr có ít nhất một indexer bật Automatic Search và một download client đang bật; thiếu nguồn/client trả lỗi rõ ràng, không tạo trạng thái “Đang tải” giả.
 - Core đặt phim `monitored=true` và phát lệnh `MoviesSearch`. `queued` nghĩa là đang tìm nguồn; chỉ dùng `downloading` khi phim đã xuất hiện trong Radarr queue.
@@ -176,6 +178,7 @@ Quy ước B5:
 - Core không bao giờ trả proxy download URL hoặc API key của Prowlarr. `magnetUrl` được dựng lại từ info hash đã index.
 - `POST /request/release` không nhận magnet tùy ý. Core tìm lại release theo `releaseId`, thêm/monitor phim trong Radarr rồi push release đã xác minh cho download client.
 - Release hết hạn/không còn trong kết quả trả `409 release_stale`; nguồn chưa cấu hình trả `503 download_source_unavailable`.
+- Nếu Radarr trả quyết định từ chối release, Core trả `409 release_rejected` kèm lý do thay vì tạo trạng thái `queued` giả. Request thủ công không xuất hiện trong queue sau 90 giây được kết thúc với `status="not_found"`.
 - Bitmagnet chỉ là bộ chỉ mục kỹ thuật; người dùng chịu trách nhiệm chỉ tải nội dung họ có quyền truy cập.
 
 ## Quy ước lỗi

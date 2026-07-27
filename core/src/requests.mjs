@@ -1,5 +1,7 @@
 import crypto from "node:crypto";
 
+const UNTRACKED_REQUEST_GRACE_MS = 90_000;
+
 function requestError(status, code, message) {
   const error = new Error(message);
   error.status = status;
@@ -50,7 +52,24 @@ function queueError(item) {
   return messages.join(" · ") || "Radarr báo lỗi khi tải phim";
 }
 
-export function createRequestService({ db, config, discover, fetchImpl = fetch }) {
+function releaseRejectionMessage(rejection) {
+  if (typeof rejection === "string") return rejection;
+  return rejection?.reason || rejection?.message || rejection?.type || null;
+}
+
+function rejectedReleaseDecision(payload) {
+  const decision = Array.isArray(payload) ? payload[0] : payload;
+  if (!decision || typeof decision !== "object") return null;
+  const reasons = (Array.isArray(decision.rejections) ? decision.rejections : [])
+    .map(releaseRejectionMessage)
+    .filter(Boolean);
+  if (decision.rejected === true || decision.approved === false || reasons.length > 0) {
+    return reasons.join(" · ") || "Radarr từ chối nguồn tải đã chọn";
+  }
+  return null;
+}
+
+export function createRequestService({ db, config, discover, fetchImpl = fetch, now = () => Date.now() }) {
   async function listQualityProfiles(type = "movie") {
     const target = type === "series" ? config.sonarr : config.radarr;
     const rows = await arrJson({ ...target, path: "/api/v3/qualityprofile", fetchImpl });
@@ -136,7 +155,7 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch }
   }
 
   async function pushMovieRelease({ arrId, tmdbId, release }) {
-    return arrJson({
+    const result = await arrJson({
       ...config.radarr,
       path: "/api/v3/release/push",
       method: "POST",
@@ -155,6 +174,9 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch }
       },
       fetchImpl
     });
+    const rejection = rejectedReleaseDecision(result);
+    if (rejection) throw requestError(409, "release_rejected", rejection);
+    return result;
   }
 
   async function createMovieRequest({ user, tmdbId, qualityProfileId }) {
@@ -240,6 +262,18 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch }
           error: failed ? command?.message || "Radarr không thể tìm nguồn tải" : "Không tìm thấy nguồn phù hợp"
         };
       }
+    }
+
+    const lastUpdatedAt = Date.parse(row.updated_at || row.created_at || "");
+    if (!row.command_id && Number.isFinite(lastUpdatedAt) && now() - lastUpdatedAt >= UNTRACKED_REQUEST_GRACE_MS) {
+      const status = row.status === "failed" ? "failed" : "not_found";
+      db.updateRequestLog({ id: requestId, status });
+      return {
+        status,
+        progress: 0,
+        eta: null,
+        error: status === "failed" ? "Radarr không thể nhận nguồn tải" : "Radarr không tạo tác vụ tải cho nguồn đã chọn"
+      };
     }
 
     return { status: row.status, progress: row.status === "available" ? 100 : 0, eta: null };

@@ -13,6 +13,7 @@
 2. **Request phim:** Dashboard → Core → Radarr `POST /api/v3/movie` → Prowlarr tìm torrent → qBittorrent tải vào `/data/torrents/<cat>` → Radarr import (hardlink) → Bazarr gắn phụ đề Việt → webhook về Core → Dashboard cập nhật.
    - B5 manual release: Dashboard → Core `GET /discover/:tmdbId/releases` → Prowlarr → Bitmagnet Torznab; user chọn release → Core xác minh lại ID → Radarr `POST /api/v3/release/push` → qBittorrent.
    - Core chỉ trả magnet dựng từ info hash; Prowlarr proxy URL/API key không bao giờ đi qua Web boundary.
+   - Core kiểm tra quyết định trả về từ Radarr trước khi ghi nhận `queued`; release bị từ chối trả lỗi ngay, request không có queue quá 90 giây kết thúc `not_found`.
 3. **Phát:** Infuse/app SMB đọc thẳng từ NAS. Dashboard chỉ đưa deep link / SMB path / HTTP stream (Core proxy, Range requests, không transcode).
 
 ## Nguyên tắc bất biến

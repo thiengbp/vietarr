@@ -16,7 +16,8 @@ function createDb() {
     getSetting: () => "20",
     countRequestsSince: () => 0,
     createRequestLog(row) {
-      const next = { ...row, arr_id: null, command_id: null };
+      const timestamp = new Date().toISOString();
+      const next = { ...row, arr_id: null, command_id: null, created_at: timestamp, updated_at: timestamp };
       logs.set(row.id, next);
       return next;
     },
@@ -26,7 +27,8 @@ function createDb() {
         ...current,
         arr_id: arrId ?? current.arr_id,
         command_id: commandId ?? current.command_id,
-        status
+        status,
+        updated_at: new Date().toISOString()
       };
       logs.set(id, next);
       return next;
@@ -146,4 +148,73 @@ test("selected release is verified upstream and pushed to Radarr", async () => {
   assert.equal(pushedRelease.movieId, 3);
   assert.equal(pushedRelease.magnetUrl, release.magnetUrl);
   assert.equal(pushedRelease.protocol, "torrent");
+});
+
+test("selected release rejected by Radarr is not reported as queued", async () => {
+  const db = createDb();
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(input);
+    if (url.pathname === "/api/v3/movie" && url.searchParams.has("tmdbId")) {
+      return json([{ id: 4, tmdbId: 10, title: "Test Movie", monitored: true, hasFile: false, qualityProfileId: 1 }]);
+    }
+    if (url.pathname === "/api/v3/indexer") return json([{ id: 1, enableAutomaticSearch: true }]);
+    if (url.pathname === "/api/v3/downloadclient") return json([{ id: 1, enable: true }]);
+    if (url.pathname === "/api/v3/movie/4" && options.method === "PUT") return json({ ...JSON.parse(options.body), id: 4 });
+    if (url.pathname === "/api/v3/release/push" && options.method === "POST") {
+      return json([{ approved: false, rejected: true, rejections: [{ reason: "Unknown movie" }] }], 201);
+    }
+    throw new Error(`Unexpected request ${options.method || "GET"} ${url.pathname}`);
+  };
+  const release = {
+    title: "Test.Movie.2026.1080p.WEB-DL",
+    source: "Bitmagnet",
+    sizeBytes: 1234,
+    seeders: 4,
+    leechers: 1,
+    infoHash: "0123456789abcdef0123456789abcdef01234567",
+    magnetUrl: "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567"
+  };
+  const service = createRequestService({ db, config, discover, fetchImpl });
+
+  await assert.rejects(
+    service.createReleaseRequest({ user, tmdbId: 10, qualityProfileId: 1, release }),
+    (error) => error.status === 409 && error.code === "release_rejected" && error.message === "Unknown movie"
+  );
+  assert.equal([...db.logs.values()][0].status, "failed");
+});
+
+test("selected release without a Radarr queue stops waiting after the grace period", async () => {
+  const db = createDb();
+  db.logs.set("req_stale", {
+    id: "req_stale",
+    user_id: 1,
+    media_type: "movie",
+    tmdb_id: 10,
+    arr_id: 5,
+    command_id: null,
+    status: "queued",
+    created_at: "2026-07-27T10:00:00.000Z",
+    updated_at: "2026-07-27T10:00:00.000Z"
+  });
+  const fetchImpl = async (input) => {
+    const url = new URL(input);
+    if (url.pathname === "/api/v3/movie/5") return json({ id: 5, hasFile: false });
+    if (url.pathname === "/api/v3/queue") return json({ records: [] });
+    throw new Error(`Unexpected request ${url.pathname}`);
+  };
+  const service = createRequestService({
+    db,
+    config,
+    discover,
+    fetchImpl,
+    now: () => Date.parse("2026-07-27T10:01:31.000Z")
+  });
+
+  assert.deepEqual(await service.progress("req_stale"), {
+    status: "not_found",
+    progress: 0,
+    eta: null,
+    error: "Radarr không tạo tác vụ tải cho nguồn đã chọn"
+  });
+  assert.equal(db.getRequestLog("req_stale").status, "not_found");
 });

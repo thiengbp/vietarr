@@ -50,5 +50,7 @@ Xem `docs/API.md`, mục B5.
 ## 7. Handoff & Next Block
 - Production Prowlarr indexer `Bitmagnet` dùng Torznab endpoint nội bộ của NAS và đã sync sang Radarr/Sonarr.
 - Prowlarr API key đã được rotate ngày 2026-07-27 sau khi proxy URL xuất hiện trong log chẩn đoán; Radarr/Sonarr indexer credentials đã cập nhật và Test PASS.
+- Sau khi phát hiện credential drift trên production, khóa Prowlarr đã được đồng bộ lại sang indexer Bitmagnet của Radarr/Sonarr; cả hai bài Test đều PASS và không có torrent giả trong qBittorrent.
+- TMDB search chuẩn hóa tên release có dấu chấm/gạch dưới; Radarr release rejection được trả về ngay và request thủ công không có queue quá 90 giây chuyển `not_found` thay vì treo `queued`.
 - Webhook callback dùng URL nội bộ `http://core:3000/api/v1/webhook/arr`; không đi vòng qua home-domain DNS/Caddy TLS.
 - Block giữ trạng thái ACTIVE đến khi production smoke hoàn tất và Jooh gửi đúng câu `APPROVED BLOCK 05`.
