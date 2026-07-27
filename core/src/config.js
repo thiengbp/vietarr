@@ -64,6 +64,10 @@ export function loadConfig() {
       baseUrl: env.QBIT_URL || "http://127.0.0.1:8080",
       username: env.QBIT_USER || "",
       password: env.QBIT_PASS || ""
+    },
+    prowlarr: {
+      baseUrl: env.PROWLARR_URL || "http://127.0.0.1:9696",
+      apiKey: env.PROWLARR_API_KEY || ""
     }
   };
 }

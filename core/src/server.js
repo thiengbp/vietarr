@@ -7,6 +7,7 @@ import { mapMovie, mapSeries, mergeMovieSubtitles, movieDetail, playOptions, str
 import { createAuthService } from "./auth.mjs";
 import { createAppDb } from "./db.mjs";
 import { createDiscoverService } from "./discover.mjs";
+import { createReleaseService } from "./releases.mjs";
 import { createRequestService } from "./requests.mjs";
 import { createWebhookService, registerArrWebhooks } from "./webhook.mjs";
 import { attachWebSocketServer, createRealtimeHub } from "./ws.js";
@@ -20,6 +21,7 @@ export function createServer(options = {}) {
   const arr = createArrClient({ cache, config });
   const auth = options.auth || createAuthService({ db, jwtSecret: config.jwtSecret, publicBaseUrl: config.publicBaseUrl });
   const discover = options.discover || createDiscoverService({ config });
+  const releases = options.releases || createReleaseService({ config, discover });
   const requests = options.requests || createRequestService({ db, config, discover });
   const webhook = options.webhook || createWebhookService({
     hub,
@@ -131,6 +133,14 @@ export function createServer(options = {}) {
     }
   });
 
+  app.get("/api/v1/discover/:tmdbId/releases", requireAuth, async (req, res, next) => {
+    try {
+      res.json(await releases.searchMovieReleases({ tmdbId: req.params.tmdbId }));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/v1/quality-profiles", requireAuth, async (req, res, next) => {
     try {
       res.json(await requests.listQualityProfiles(req.query.type || "movie"));
@@ -142,6 +152,15 @@ export function createServer(options = {}) {
   app.post("/api/v1/request", requireAuth, async (req, res, next) => {
     try {
       res.status(202).json(await requests.createRequest({ user: req.user, ...req.body }));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/v1/request/release", requireAuth, async (req, res, next) => {
+    try {
+      const release = await releases.findMovieRelease({ tmdbId: req.body?.tmdbId, id: req.body?.releaseId });
+      res.status(202).json(await requests.createReleaseRequest({ user: req.user, ...req.body, release }));
     } catch (error) {
       next(error);
     }

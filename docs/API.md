@@ -147,5 +147,36 @@ Realtime rules:
 ## B4 — packaging/release
 Block 04 không thêm Core API mới. Mọi API public hiện tại vẫn là B2/B3 contract.
 
+## B5 — nguồn tải Bitmagnet
+Các endpoint B2/B3 đã freeze không đổi. B5 chỉ bổ sung API chọn release thủ công.
+
+| Method | Path | Auth | Body | Trả về |
+|--------|------|------|------|--------|
+| GET | `/discover/:tmdbId/releases` | JWT | none | `{source,results:[ReleaseOption]}` |
+| POST | `/request/release` | JWT | `{tmdbId,type:'movie',qualityProfileId,releaseId}` | `{requestId,status,mediaId,releaseTitle}` |
+
+`ReleaseOption`:
+```json
+{
+  "id": "opaque-stable-id",
+  "title": "Movie.Title.2026.2160p.WEB-DL",
+  "source": "Bitmagnet",
+  "quality": "2160p",
+  "sizeBytes": 1234567890,
+  "seeders": 12,
+  "leechers": 3,
+  "publishDate": "2026-07-27T10:00:00.000Z",
+  "infoHash": "0123456789abcdef...",
+  "magnetUrl": "magnet:?xt=urn:btih:..."
+}
+```
+
+Quy ước B5:
+- Core tìm release qua Prowlarr; Web không gọi Prowlarr/Bitmagnet trực tiếp.
+- Core không bao giờ trả proxy download URL hoặc API key của Prowlarr. `magnetUrl` được dựng lại từ info hash đã index.
+- `POST /request/release` không nhận magnet tùy ý. Core tìm lại release theo `releaseId`, thêm/monitor phim trong Radarr rồi push release đã xác minh cho download client.
+- Release hết hạn/không còn trong kết quả trả `409 release_stale`; nguồn chưa cấu hình trả `503 download_source_unavailable`.
+- Bitmagnet chỉ là bộ chỉ mục kỹ thuật; người dùng chịu trách nhiệm chỉ tải nội dung họ có quyền truy cập.
+
 ## Quy ước lỗi
 JSON `{error: {code, message}}`; 400 input, 401/403 auth, 404, 502 khi app *arr downstream lỗi (kèm `upstream`).

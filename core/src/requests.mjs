@@ -87,59 +87,108 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch }
     });
   }
 
-  async function createMovieRequest({ user, tmdbId, qualityProfileId }) {
+  async function validateMovieRequest({ user, tmdbId }) {
     const dailyLimit = Number(db.getSetting("rate_limit_per_day") || 5);
     const usedToday = db.countRequestsSince({ userId: user.id, since: startOfTodayIso() });
     if (usedToday >= dailyLimit) throw requestError(429, "rate_limited", "Đã đạt giới hạn hôm nay");
 
     const existing = await findExistingMovie(tmdbId);
     if (existing?.hasFile || existing?.movieFile) throw requestError(409, "already_available", "Đã có trong thư viện");
-
     await ensureMovieDownloadReady();
+    return existing;
+  }
+
+  async function upsertMovie({ existing, tmdbId, qualityProfileId }) {
+    if (existing) {
+      const updated = await arrJson({
+        ...config.radarr,
+        path: `/api/v3/movie/${existing.id}`,
+        method: "PUT",
+        body: { ...existing, monitored: true, qualityProfileId: Number(qualityProfileId || existing.qualityProfileId) },
+        fetchImpl
+      });
+      return updated.id;
+    }
+
+    const movie = await discover.movie(tmdbId);
+    const rootFolders = await arrJson({ ...config.radarr, path: "/api/v3/rootfolder", fetchImpl });
+    const qualityProfiles = await listQualityProfiles("movie");
+    const rootFolderPath = rootFolders[0]?.path || "/data/media/movies";
+    const profileId = Number(qualityProfileId || qualityProfiles[0]?.id);
+    const added = await arrJson({
+      ...config.radarr,
+      path: "/api/v3/movie",
+      method: "POST",
+      body: {
+        title: movie.title,
+        qualityProfileId: profileId,
+        titleSlug: movie.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || `tmdb-${tmdbId}`,
+        images: movie.images || [],
+        tmdbId: movie.id,
+        year: Number((movie.release_date || "").slice(0, 4)) || undefined,
+        rootFolderPath,
+        monitored: true,
+        addOptions: { searchForMovie: false }
+      },
+      fetchImpl
+    });
+    return added.id;
+  }
+
+  async function pushMovieRelease({ arrId, tmdbId, release }) {
+    return arrJson({
+      ...config.radarr,
+      path: "/api/v3/release/push",
+      method: "POST",
+      body: {
+        title: release.title,
+        size: Number(release.sizeBytes || 0),
+        indexer: release.source,
+        magnetUrl: release.magnetUrl,
+        infoHash: release.infoHash,
+        seeders: release.seeders,
+        leechers: release.leechers,
+        protocol: "torrent",
+        publishDate: release.publishDate || new Date().toISOString(),
+        tmdbId: Number(tmdbId),
+        movieId: Number(arrId)
+      },
+      fetchImpl
+    });
+  }
+
+  async function createMovieRequest({ user, tmdbId, qualityProfileId }) {
+    const existing = await validateMovieRequest({ user, tmdbId });
 
     const requestId = `req_${crypto.randomUUID()}`;
     const log = db.createRequestLog({ id: requestId, userId: user.id, mediaType: "movie", tmdbId, status: "queued" });
     let arrId = existing?.id || null;
     try {
-      if (existing) {
-        const updated = await arrJson({
-          ...config.radarr,
-          path: `/api/v3/movie/${existing.id}`,
-          method: "PUT",
-          body: { ...existing, monitored: true, qualityProfileId: Number(qualityProfileId || existing.qualityProfileId) },
-          fetchImpl
-        });
-        arrId = updated.id;
-      } else {
-        const movie = await discover.movie(tmdbId);
-        const rootFolders = await arrJson({ ...config.radarr, path: "/api/v3/rootfolder", fetchImpl });
-        const qualityProfiles = await listQualityProfiles("movie");
-        const rootFolderPath = rootFolders[0]?.path || "/data/media/movies";
-        const profileId = Number(qualityProfileId || qualityProfiles[0]?.id);
-        const added = await arrJson({
-          ...config.radarr,
-          path: "/api/v3/movie",
-          method: "POST",
-          body: {
-            title: movie.title,
-            qualityProfileId: profileId,
-            titleSlug: movie.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || `tmdb-${tmdbId}`,
-            images: movie.images || [],
-            tmdbId: movie.id,
-            year: Number((movie.release_date || "").slice(0, 4)) || undefined,
-            rootFolderPath,
-            monitored: true,
-            addOptions: { searchForMovie: false }
-          },
-          fetchImpl
-        });
-        arrId = added.id;
-      }
+      arrId = await upsertMovie({ existing, tmdbId, qualityProfileId });
 
       db.updateRequestLog({ id: requestId, arrId, status: "queued" });
       const command = await startMovieSearch(arrId);
       db.updateRequestLog({ id: requestId, arrId, commandId: command?.id || null, status: "queued" });
       return { requestId: log.id, status: "queued", mediaId: `movie-${arrId}` };
+    } catch (error) {
+      db.updateRequestLog({ id: requestId, arrId, status: "failed" });
+      throw error;
+    }
+  }
+
+  async function createSelectedReleaseRequest({ user, tmdbId, qualityProfileId, release }) {
+    if (!release?.magnetUrl || !release?.infoHash) {
+      throw requestError(400, "invalid_release", "Nguồn tải không hợp lệ");
+    }
+    const existing = await validateMovieRequest({ user, tmdbId });
+    const requestId = `req_${crypto.randomUUID()}`;
+    const log = db.createRequestLog({ id: requestId, userId: user.id, mediaType: "movie", tmdbId, status: "queued" });
+    let arrId = existing?.id || null;
+    try {
+      arrId = await upsertMovie({ existing, tmdbId, qualityProfileId });
+      db.updateRequestLog({ id: requestId, arrId, status: "queued" });
+      await pushMovieRelease({ arrId, tmdbId, release });
+      return { requestId: log.id, status: "queued", mediaId: `movie-${arrId}`, releaseTitle: release.title };
     } catch (error) {
       db.updateRequestLog({ id: requestId, arrId, status: "failed" });
       throw error;
@@ -201,6 +250,10 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch }
     async createRequest({ user, tmdbId, type = "movie", qualityProfileId }) {
       if (type !== "movie") throw requestError(400, "unsupported_type", "Block 03 currently supports movie requests first");
       return createMovieRequest({ user, tmdbId, qualityProfileId });
+    },
+    async createReleaseRequest({ user, tmdbId, type = "movie", qualityProfileId, release }) {
+      if (type !== "movie") throw requestError(400, "unsupported_type", "Block 05 currently supports movie requests first");
+      return createSelectedReleaseRequest({ user, tmdbId, qualityProfileId, release });
     },
     progress: requestProgress
   };

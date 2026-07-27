@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ReleasePicker } from "@/components/ReleasePicker";
 import { RequestButton } from "@/components/RequestButton";
 import { Toast } from "@/components/Toast";
 import { apiFetch } from "@/lib/clientApi";
@@ -22,6 +23,7 @@ export function DiscoverClient() {
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [picker, setPicker] = useState(null);
 
   const load = useCallback(async (q = query) => {
     setLoading(true);
@@ -130,6 +132,14 @@ export function DiscoverClient() {
     }));
   }
 
+  const chooseSource = useCallback((item, qualityProfileId) => {
+    setPicker({ item, qualityProfileId });
+  }, []);
+
+  const closePicker = useCallback(() => {
+    setPicker(null);
+  }, []);
+
   function stateFor(item) {
     const local = states[itemKey(item)];
     if (local?.mediaId && states[local.mediaId]) return states[local.mediaId];
@@ -164,11 +174,24 @@ export function DiscoverClient() {
             <div className="mt-2">
               <h3 className="line-clamp-2 min-h-10 text-sm font-medium text-primary">{item.title}</h3>
               <p className="mt-0.5 text-xs text-secondary">{yearLabel(item)}</p>
-              <RequestButton item={item} state={stateFor(item)} onRequested={onRequested} qualityProfiles={qualityProfiles} />
+              <RequestButton
+                item={item}
+                state={stateFor(item)}
+                onChooseSource={chooseSource}
+                qualityProfiles={qualityProfiles}
+              />
             </div>
           </article>
         ))}
       </div>
+      {picker ? (
+        <ReleasePicker
+          item={picker.item}
+          qualityProfileId={picker.qualityProfileId}
+          onClose={closePicker}
+          onRequested={onRequested}
+        />
+      ) : null}
       <Toast message={toast} onClose={() => setToast("")} />
     </main>
   );

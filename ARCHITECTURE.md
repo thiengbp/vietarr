@@ -11,6 +11,8 @@
 ## Luồng dữ liệu chính
 1. **Thư viện:** Dashboard → Core → Radarr/Sonarr API (poster, metadata, trạng thái file). Không quét file trực tiếp.
 2. **Request phim:** Dashboard → Core → Radarr `POST /api/v3/movie` → Prowlarr tìm torrent → qBittorrent tải vào `/data/torrents/<cat>` → Radarr import (hardlink) → Bazarr gắn phụ đề Việt → webhook về Core → Dashboard cập nhật.
+   - B5 manual release: Dashboard → Core `GET /discover/:tmdbId/releases` → Prowlarr → Bitmagnet Torznab; user chọn release → Core xác minh lại ID → Radarr `POST /api/v3/release/push` → qBittorrent.
+   - Core chỉ trả magnet dựng từ info hash; Prowlarr proxy URL/API key không bao giờ đi qua Web boundary.
 3. **Phát:** Infuse/app SMB đọc thẳng từ NAS. Dashboard chỉ đưa deep link / SMB path / HTTP stream (Core proxy, Range requests, không transcode).
 
 ## Nguyên tắc bất biến

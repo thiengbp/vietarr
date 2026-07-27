@@ -15,3 +15,5 @@
 | Thư viện | library | |
 | Khám phá | discover | tab TMDB |
 | Nguồn | indexer / source | torrent, Fshare |
+| Nguồn tải | release source | kết quả từ Prowlarr/Bitmagnet |
+| Liên kết Magnet | magnet URL | chứa info hash; có thể không có tracker announce |

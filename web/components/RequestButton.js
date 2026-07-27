@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/clientApi";
 
-export function RequestButton({ item, state, onRequested, qualityProfiles = null }) {
+export function RequestButton({ item, state, onChooseSource, qualityProfiles = null }) {
   const [profiles, setProfiles] = useState(qualityProfiles || []);
   const [profileId, setProfileId] = useState("");
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -29,22 +28,6 @@ export function RequestButton({ item, state, onRequested, qualityProfiles = null
       active = false;
     };
   }, [item.type, qualityProfiles]);
-
-  async function requestMedia() {
-    setBusy(true);
-    setError("");
-    try {
-      const result = await apiFetch("/request", {
-        method: "POST",
-        body: { tmdbId: item.tmdbId, type: item.type || "movie", qualityProfileId: Number(profileId) }
-      });
-      onRequested?.(item, result);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   const progress = state?.progress ?? 0;
   const queued = state?.status === "queued" || state?.status === "searching";
@@ -88,12 +71,13 @@ export function RequestButton({ item, state, onRequested, qualityProfiles = null
             ))}
           </select>
           <button
-            className="rounded-md bg-accent px-3 py-2 text-xs font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-11 rounded-md bg-accent px-3 py-2 text-xs font-semibold text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
-            disabled={busy || !profileId}
-            onClick={requestMedia}
+            aria-label={`Chọn nguồn tải cho ${item.title}`}
+            disabled={!profileId}
+            onClick={() => onChooseSource?.(item, Number(profileId))}
           >
-            {busy ? "..." : "Tải"}
+            Tải
           </button>
         </div>
       ) : null}

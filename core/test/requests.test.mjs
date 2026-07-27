@@ -106,3 +106,44 @@ test("existing movie is monitored, searched and reports real queue progress", as
     eta: null
   });
 });
+
+test("selected release is verified upstream and pushed to Radarr", async () => {
+  const db = createDb();
+  let pushedRelease;
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(input);
+    if (url.pathname === "/api/v3/movie" && url.searchParams.has("tmdbId")) {
+      return json([{ id: 3, tmdbId: 10, title: "Test Movie", monitored: false, hasFile: false, qualityProfileId: 1 }]);
+    }
+    if (url.pathname === "/api/v3/indexer") return json([{ id: 1, enableAutomaticSearch: true }]);
+    if (url.pathname === "/api/v3/downloadclient") return json([{ id: 1, enable: true }]);
+    if (url.pathname === "/api/v3/movie/3" && options.method === "PUT") {
+      return json({ ...JSON.parse(options.body), id: 3 });
+    }
+    if (url.pathname === "/api/v3/release/push" && options.method === "POST") {
+      pushedRelease = JSON.parse(options.body);
+      return json([pushedRelease], 201);
+    }
+    throw new Error(`Unexpected request ${options.method || "GET"} ${url.pathname}`);
+  };
+  const release = {
+    title: "Test.Movie.2026.1080p.WEB-DL",
+    source: "Bitmagnet",
+    sizeBytes: 1234,
+    seeders: 4,
+    leechers: 1,
+    publishDate: "2026-07-27T10:00:00Z",
+    infoHash: "0123456789abcdef0123456789abcdef01234567",
+    magnetUrl: "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567"
+  };
+
+  const service = createRequestService({ db, config, discover, fetchImpl });
+  const result = await service.createReleaseRequest({ user, tmdbId: 10, qualityProfileId: 1, release });
+
+  assert.equal(result.mediaId, "movie-3");
+  assert.equal(result.releaseTitle, release.title);
+  assert.equal(pushedRelease.tmdbId, 10);
+  assert.equal(pushedRelease.movieId, 3);
+  assert.equal(pushedRelease.magnetUrl, release.magnetUrl);
+  assert.equal(pushedRelease.protocol, "torrent");
+});

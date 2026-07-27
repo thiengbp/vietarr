@@ -16,6 +16,8 @@ services:
       - SONARR_API_KEY=${SONARR_API_KEY:-}
       - BAZARR_URL=${BAZARR_URL:-http://bazarr:6767}
       - BAZARR_API_KEY=${BAZARR_API_KEY:-}
+      - PROWLARR_URL=${PROWLARR_URL:-http://prowlarr:9696}
+      - PROWLARR_API_KEY=${PROWLARR_API_KEY:-}
       - QBIT_URL=${QBIT_URL:-http://qbittorrent:8080}
       - QBIT_USER=${QBIT_USER:-}
       - QBIT_PASS=${QBIT_PASS:-}

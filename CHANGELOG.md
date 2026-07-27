@@ -3,11 +3,16 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 
 ## [Unreleased]
 
+### Added
+- Add Block 05 Bitmagnet release discovery through Prowlarr with credential-safe magnet links, an accessible responsive source picker, and selected-release push through Radarr to qBittorrent.
+- Add authenticated `GET /discover/:tmdbId/releases` and `POST /request/release` APIs without changing frozen B2/B3 contracts.
+
 ### Fixed
 - Trigger a real monitored Radarr `MoviesSearch` only when an automatic indexer and enabled download client exist; otherwise return a clear source/client configuration error.
 - Report request state from the real Radarr command, queue, and movie file instead of presenting `queued` as fake download progress.
 - Stop generating Infuse, VLC, HTTP, and SMB links for movies without a real file; desktop UI no longer opens unsupported mobile player URL schemes.
 - Update patched Next.js/PostCSS releases and override Sharp to a non-vulnerable release so the production dependency audit passes.
+- Filter Prowlarr results by the movie title/year and never expose Prowlarr proxy download URLs containing its API key.
 
 ## [1.0.0] - 2026-07-06
 ### Added

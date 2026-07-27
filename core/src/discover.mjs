@@ -55,8 +55,8 @@ export function createDiscoverService({ config, fetchImpl = fetch }) {
         results: (data.results || []).map((item) => mapItem(item, "movie"))
       };
     },
-    async movie(tmdbId) {
-      return fetchTmdb({ config, path: `/movie/${encodeURIComponent(tmdbId)}`, fetchImpl });
+    async movie(tmdbId, { language = "vi-VN" } = {}) {
+      return fetchTmdb({ config, path: `/movie/${encodeURIComponent(tmdbId)}`, params: { language }, fetchImpl });
     }
   };
 }
