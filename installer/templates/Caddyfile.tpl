@@ -34,6 +34,6 @@ bazarr.{{DOMAIN_SUFFIX}} {
 	reverse_proxy bazarr:6767
 }
 
-qbittorrent.{{DOMAIN_SUFFIX}} {
+qbit.{{DOMAIN_SUFFIX}}, qbittorrent.{{DOMAIN_SUFFIX}} {
 	reverse_proxy qbittorrent:8080
 }
