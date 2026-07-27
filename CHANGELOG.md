@@ -5,6 +5,15 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 ## [Unreleased]
 
 ### Added
+- Add Block 06 Home Experience with a real-library hero, recent viewing history, download activity, discovery feeds, genre filters, and an available-only library surface.
+- Add authenticated home discovery APIs for TMDB day/week/popular feeds and movie genres without changing frozen B2/B3/B5 contracts.
+
+### Changed
+- Turn the root movie grid into an honest media dashboard while retaining existing routes, Vietnamese terminology, and VietArr's dark amber design system.
+
+## [1.1.0] - 2026-07-28
+
+### Added
 - Add Block 05 Bitmagnet release discovery through Prowlarr with credential-safe magnet links, an accessible responsive source picker, and selected-release push through Radarr to qBittorrent.
 - Add authenticated `GET /discover/:tmdbId/releases` and `POST /request/release` APIs without changing frozen B2/B3 contracts.
 

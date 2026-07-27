@@ -59,6 +59,17 @@ Ghi chú: accent **cam hổ phách** thay vì đỏ Netflix — tránh cảm gi�
 | `MediaHero` | backdrop + metadata + hàng nút, trang chi tiết | P2 |
 | `Toast` | thông báo (request thành công, lỗi) | P3 |
 | `EmptyState` | thư viện trống / không tìm thấy, có minh họa + CTA | P2 |
+| `HomeHero` | backdrop phim đã có file + metadata + CTA “Xem ngay” | P6 |
+| `MediaRail` | hàng poster ngang có tiêu đề, mô tả và liên kết ngữ cảnh | P6 |
+| `HomeDiscoverShelf` | feed Hôm nay/Tuần này/Phổ biến + lọc thể loại | P6 |
+| `RecentlyViewed` | lịch sử mở phim cục bộ, không giả tiến độ phát | P6 |
+
+### 3.1. Trang chủ
+- Macrostructure: **Ecosystem Index** — nhiều bề mặt khám phá nhưng không xếp các carousel lặp lại vô hạn.
+- Thứ tự: hero phim sẵn sàng → xem gần đây → đang tải/chờ → khám phá → thư viện.
+- Hero không dùng phim `missing`, `queued`, `downloading` hoặc `unknown`.
+- `Trending today/week/popular` dùng một vùng tab; không tách thành ba hàng giống nhau.
+- Badge kỹ thuật `Thiếu/Không rõ` không xuất hiện trong thư viện xem được; chúng thuộc vùng hoạt động tải.
 
 ## 4. Motion
 - Chuẩn: `150ms ease-out` (hover), `250ms` (modal/menu). Poster hover: scale `1.03` + shadow.

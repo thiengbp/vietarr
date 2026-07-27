@@ -1,6 +1,7 @@
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 const BACKDROP_BASE = "https://image.tmdb.org/t/p/w780";
+const HOME_FEEDS = new Set(["today", "week", "popular", "genre"]);
 
 function tmdbError(status, message) {
   const error = new Error(message);
@@ -67,6 +68,47 @@ export function createDiscoverService({ config, fetchImpl = fetch }) {
           ...(movies.results || []).map((item) => mapItem(item, "movie")),
           ...(series.results || []).map((item) => mapItem(item, "series"))
         ]
+      };
+    },
+    async homeFeed({ feed = "today", page = 1, genreId } = {}) {
+      if (!HOME_FEEDS.has(feed)) {
+        const error = new Error("feed must be today, week, popular, or genre");
+        error.status = 400;
+        error.code = "invalid_home_feed";
+        throw error;
+      }
+
+      let path = `/trending/movie/${feed === "today" ? "day" : "week"}`;
+      const params = { page };
+      if (feed === "popular") path = "/movie/popular";
+      if (feed === "genre") {
+        const parsedGenreId = Number(genreId);
+        if (!Number.isInteger(parsedGenreId) || parsedGenreId < 1) {
+          const error = new Error("genreId must be a positive integer when feed=genre");
+          error.status = 400;
+          error.code = "invalid_genre";
+          throw error;
+        }
+        path = "/discover/movie";
+        params.with_genres = parsedGenreId;
+        params.sort_by = "popularity.desc";
+        params.include_adult = "false";
+      }
+
+      const data = await fetchTmdb({ config, path, params, fetchImpl });
+      return {
+        feed,
+        page: data.page || page,
+        totalPages: data.total_pages || 1,
+        results: (data.results || []).map((item) => mapItem(item, "movie"))
+      };
+    },
+    async genres() {
+      const data = await fetchTmdb({ config, path: "/genre/movie/list", fetchImpl });
+      return {
+        results: (data.genres || [])
+          .filter((genre) => Number.isInteger(genre.id) && genre.name)
+          .map((genre) => ({ id: genre.id, name: genre.name }))
       };
     },
     async movie(tmdbId, { language = "vi-VN" } = {}) {

@@ -1,0 +1,75 @@
+/* Hallmark · genre: atmospheric · macrostructure: Ecosystem Index · tone: cinematic-utilitarian · anchor hue: amber · theme: VietArr Night
+ * nav: N5 Floating pill · footer: Ft2 Inline rule · enrichment: E8 TMDB photography
+ * audience: household media users · use: play or understand download state · motion: crossfade + press only
+ * pre-emit critique: P5 H5 E4 S5 R5 V4
+ * contrast: pass (40–41) · slop: pass (42–45) · honest: pass (46) · chrome: pass (47) · tokens: pass (48)
+ * responsive: pass (34, 49, 50–57) · icons: pass (30)
+ */
+
+:root {
+  --color-paper: oklch(16% 0.018 265);
+  --color-paper-2: oklch(20% 0.022 265);
+  --color-paper-3: oklch(25% 0.03 265);
+  --color-rule: oklch(31% 0.032 265);
+  --color-rule-strong: oklch(42% 0.038 265);
+  --color-ink: oklch(94% 0.014 265);
+  --color-ink-2: oklch(72% 0.036 265);
+  --color-muted: oklch(55% 0.038 265);
+  --color-accent: oklch(79% 0.16 75);
+  --color-accent-hover: oklch(84% 0.15 78);
+  --color-accent-ink: oklch(19% 0.035 70);
+  --color-focus: oklch(88% 0.17 82);
+  --color-focus-inverse: oklch(16% 0.018 265);
+  --color-success: oklch(80% 0.18 152);
+  --color-info: oklch(72% 0.16 254);
+  --color-danger: oklch(70% 0.2 25);
+  --color-quality: oklch(74% 0.12 90);
+  --color-shadow: oklch(7% 0.018 265);
+
+  --font-display: "Avenir Next", "Inter", ui-sans-serif, sans-serif;
+  --font-body: "Inter", "SF Pro Text", ui-sans-serif, system-ui, sans-serif;
+  --font-wordmark: "Avenir Next", "Inter", ui-sans-serif, sans-serif;
+
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 9rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.953rem;
+  --text-2xl: 2.441rem;
+  --text-display: clamp(2.35rem, 5vw, 4.75rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+
+  --rule-hair: 1px;
+  --radius-card: 0.75rem;
+  --radius-button: 0.625rem;
+  --radius-hero: 1.25rem;
+  --radius-pill: 999px;
+
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+
+  --shadow-poster: 0 0.75rem 2rem -1rem var(--color-shadow);
+}

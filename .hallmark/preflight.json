@@ -1,0 +1,10 @@
+{
+  "date": "2026-07-28",
+  "framework": "Next.js 15 App Router",
+  "styling": "Tailwind CSS 3 with CSS custom properties",
+  "font_stack": "Inter-first VietArr design system with Avenir Next display fallback",
+  "palette": "dark blue-black surfaces with amber accent from ADR-004",
+  "motion": "motion-cut; no motion library",
+  "spacing": "4px scale",
+  "source_of_truth": "docs/Design_System.md"
+}

@@ -133,6 +133,26 @@ export function createServer(options = {}) {
     }
   });
 
+  app.get("/api/v1/home/discover", requireAuth, async (req, res, next) => {
+    try {
+      res.json(await discover.homeFeed({
+        feed: req.query.feed || "today",
+        page: Number(req.query.page || 1),
+        genreId: req.query.genreId
+      }));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/v1/home/genres", requireAuth, async (_req, res, next) => {
+    try {
+      res.json(await discover.genres());
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/v1/discover/:tmdbId/releases", requireAuth, async (req, res, next) => {
     try {
       res.json(await releases.searchMediaReleases({ tmdbId: req.params.tmdbId, type: req.query.type || "movie" }));

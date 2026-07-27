@@ -5,7 +5,7 @@
 ## Thành phần
 - **installer/** — CLI cài đặt + zero-touch wiring (B1). Sinh `/opt/vietarr/.env`, `/opt/vietarr/docker-compose.yml`, appdata local và `install-report.txt`; chi tiết: BLOCK-01 §3.
 - **core/** — Vietarr Core: Node.js/Express/SQLite. Auth, request, HTTP stream proxy, websocket realtime, webhook từ *arr. (B2, B3)
-- **web/** — Dashboard Next.js 15: thư viện, khám phá TMDB, request, play menu. (B2, B3)
+- **web/** — Dashboard Next.js 15: Home Experience, thư viện, khám phá TMDB, request, play menu. (B2, B3, B6)
 - **installer/templates/** — template docker-compose, Caddyfile, recyclarr (installer render ra /opt/vietarr trên máy đích).
 
 ## Luồng dữ liệu chính
@@ -16,6 +16,7 @@
    - Core kiểm tra quyết định trả về từ Radarr trước khi ghi nhận `queued`; release bị từ chối trả lỗi ngay, request không có queue quá 90 giây kết thúc `not_found`.
    - Discover search gộp TMDB movie/TV; phim bộ dùng Prowlarr `tvsearch` để xem/sao chép Magnet, chưa push tự động sang Sonarr trong B5.
 3. **Phát:** Infuse/app SMB đọc thẳng từ NAS. Dashboard chỉ đưa deep link / SMB path / HTTP stream (Core proxy, Range requests, không transcode).
+4. **Trang chủ:** Dashboard lấy thư viện từ API B2 để chọn hero chỉ từ phim có file, tách phim đang tải/chờ khỏi thư viện sẵn sàng; các feed Hôm nay/Tuần này/Phổ biến và thể loại gọi API B6 → TMDB. Lịch sử “Xem gần đây” nằm trong localStorage của trình duyệt và không giả làm tiến độ phát.
 
 ## Nguyên tắc bất biến
 - Chuẩn thư mục theo ADR-006: một root `/data`, hardlink giữa `torrents/` và `library/`; trên NAS tương ứng `/volume1/media/{torrents,library}`.

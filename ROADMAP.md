@@ -9,7 +9,8 @@ Block chỉ được đánh RELEASED khi toàn bộ Definition of Done PASS.
 | 02 | Dashboard Read-only (thư viện + nút Xem) | ✅ RELEASED `v0.2.0` | docs/blocks/BLOCK-02-dashboard-read.md |
 | 03 | Dashboard Write (tìm TMDB, Tải về, user/auth) | ✅ RELEASED `v0.3.0` | docs/blocks/BLOCK-03-dashboard-write.md |
 | 04 | Đóng gói phát hành (docs public, one-liner install, video) | ✅ RELEASED `v1.0.0` | docs/blocks/BLOCK-04-release.md |
-| 05 | Nguồn tải Bitmagnet (tìm/chọn release trong Khám phá) | 🚧 ACTIVE | docs/blocks/BLOCK-05-bitmagnet-sources.md |
+| 05 | Nguồn tải Bitmagnet (tìm/chọn release trong Khám phá) | ✅ RELEASED `v1.1.0` | docs/blocks/BLOCK-05-bitmagnet-sources.md |
+| 06 | Home Experience (nổi bật, hoạt động, khám phá, thư viện) | 🚧 ACTIVE | docs/blocks/BLOCK-06-home-experience.md |
 
 ## Nguyên tắc chuyển block
 1. DoD của block hiện tại: 100% PASS, có bằng chứng (log/screenshot) trong mục Release.

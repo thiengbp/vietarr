@@ -25,7 +25,7 @@ export function DiscoverClient() {
   const [error, setError] = useState("");
   const [picker, setPicker] = useState(null);
 
-  const load = useCallback(async (q = query) => {
+  const load = useCallback(async (q = "") => {
     setLoading(true);
     setError("");
     try {
@@ -37,10 +37,12 @@ export function DiscoverClient() {
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, []);
 
   useEffect(() => {
-    load("");
+    const initialQuery = new URLSearchParams(window.location.search).get("q") || "";
+    setQuery(initialQuery);
+    load(initialQuery);
   }, [load]);
 
   useEffect(() => {

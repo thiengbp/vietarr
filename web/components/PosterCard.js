@@ -1,31 +1,33 @@
+import Image from "next/image";
 import Link from "next/link";
 import { QualityBadge } from "./QualityBadge";
 import { StatusBadge } from "./StatusBadge";
 
-export function PosterCard({ item, href }) {
+export function PosterCard({ item, href, showStatus = true }) {
   return (
-    <Link href={href} className="group block min-w-0">
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-subtle bg-raised">
+    <Link href={href} className="poster-card">
+      <div className="poster-card__media">
         {item.posterUrl ? (
-          <img
+          <Image
             src={item.posterUrl}
             alt=""
-            className="h-full w-full object-cover transition duration-150 ease-out group-hover:scale-[1.03]"
-            loading="lazy"
+            className="poster-card__image"
+            fill
+            sizes="(min-width: 75rem) 14vw, (min-width: 48rem) 20vw, 33vw"
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-overlay px-3 text-center text-xs text-muted">
+          <div className="poster-card__fallback">
             {item.title}
           </div>
         )}
-        <div className="absolute left-2 top-2 flex flex-wrap gap-1">
-          <StatusBadge status={item.status} />
+        <div className="poster-card__badges">
+          {showStatus ? <StatusBadge status={item.status} /> : null}
           <QualityBadge quality={item.quality} />
         </div>
       </div>
-      <div className="mt-2 min-w-0">
-        <h3 className="truncate text-sm font-medium text-primary">{item.title}</h3>
-        <p className="mt-0.5 text-xs text-secondary">{item.year || "—"}</p>
+      <div className="poster-card__meta">
+        <h3>{item.title}</h3>
+        <p>{item.year || "—"}</p>
       </div>
     </Link>
   );

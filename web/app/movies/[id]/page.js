@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PlayMenu } from "@/components/PlayMenu";
 import { QualityBadge } from "@/components/QualityBadge";
+import { RecentMovieTracker } from "@/components/RecentlyViewed";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getMovie, getPlayOptions } from "@/lib/api";
 
@@ -18,6 +19,7 @@ export default async function MovieDetailPage({ params }) {
 
   return (
     <main className="min-h-screen bg-base">
+      {movie.status === "available" ? <RecentMovieTracker movieId={movie.id} /> : null}
       <section className="relative min-h-[78vh] overflow-hidden">
         {movie.backdropUrl ? (
           <img src={movie.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-35" />

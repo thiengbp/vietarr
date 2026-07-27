@@ -1,5 +1,5 @@
 # BLOCK-05 — NGUỒN TẢI BITMAGNET
-> **Trạng thái:** ACTIVE
+> **Trạng thái:** RELEASED `v1.1.0` · **Kết thúc:** 2026-07-28
 > **Phụ thuộc:** B3, B4 · **Bắt đầu:** 2026-07-27
 
 ## 1. Vision
@@ -61,4 +61,14 @@ Xem `docs/API.md`, mục B5.
 - Production qBittorrent đã bật Automatic Torrent Management và category paths: Interstellar tiếp tục tải tại `/data/torrents/movies`, The Eternal Fragrance tại `/data/torrents/tv`; thư mục gốc không còn dữ liệu rời.
 - ADR-006 được Jooh duyệt ngày 2026-07-28: media root vật lý đổi sang `/volume1/media/{torrents,library}`, container giữ một mount `/data`, thư viện *arr đổi sang `/data/library/{movies,tv}` để cấu trúc NAS rõ ràng mà vẫn hardlink.
 - Webhook callback dùng URL nội bộ `http://core:3000/api/v1/webhook/arr`; không đi vòng qua home-domain DNS/Caddy TLS.
-- Block giữ trạng thái ACTIVE đến khi production smoke hoàn tất và Jooh gửi đúng câu `APPROVED BLOCK 05`.
+- Block đã giữ trạng thái ACTIVE đến khi production smoke hoàn tất và Jooh gửi đúng câu `APPROVED BLOCK 05`.
+- Jooh gửi đúng câu `APPROVED BLOCK 05` ngày 2026-07-28; toàn bộ DoD đã PASS và Block 05 được release `v1.1.0`.
+- Block tiếp theo: BLOCK-06 — Home Experience. B2/B3/B5 giữ nguyên; UI trang chủ dùng API B6 mới cho các feed TMDB.
+
+## 8. Release
+
+`=== BLOCK 05 COMPLETE ===`
+
+- Version: `v1.1.0`
+- Approved by Jooh: 2026-07-28
+- Evidence: toàn bộ checklist §6 PASS; production smoke và handoff ghi tại §7.

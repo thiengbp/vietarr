@@ -184,5 +184,21 @@ Quy ước B5:
 - Nếu Radarr trả quyết định từ chối release, Core trả `409 release_rejected` kèm lý do thay vì tạo trạng thái `queued` giả. Request thủ công không xuất hiện trong queue sau 90 giây được kết thúc với `status="not_found"`.
 - Bitmagnet chỉ là bộ chỉ mục kỹ thuật; người dùng chịu trách nhiệm chỉ tải nội dung họ có quyền truy cập.
 
+## B6 — Home Experience
+
+Các endpoint B2/B3/B5 đã freeze không đổi. B6 bổ sung feed riêng cho trang chủ; dữ liệu thư viện và trạng thái tải tiếp tục dùng API B2.
+
+| Method | Path | Auth | Trả về |
+|--------|------|------|--------|
+| GET | `/home/discover?feed=today|week|popular|genre&page=&genreId=` | JWT | `{feed,page,totalPages,results:[DiscoverItem]}` |
+| GET | `/home/genres` | JWT | `{results:[{id,name}]}` |
+
+Quy ước B6:
+- `feed=today` dùng TMDB trending movie theo ngày; `week` theo tuần; `popular` dùng danh sách phổ biến.
+- `feed=genre` bắt buộc `genreId` là số nguyên dương và dùng TMDB discover movie sắp theo độ phổ biến.
+- `DiscoverItem` giữ nguyên schema B3; Web không nhận TMDB key.
+- Trang chủ chỉ chọn hero từ `MediaSummary.status='available'`; nội dung thiếu file không được trình bày như có thể xem.
+- “Xem gần đây” là lịch sử mở trang chi tiết lưu cục bộ trên thiết bị. B6 chưa có playback progress và không dùng nhãn “Xem tiếp”.
+
 ## Quy ước lỗi
 JSON `{error: {code, message}}`; 400 input, 401/403 auth, 404, 502 khi app *arr downstream lỗi (kèm `upstream`).
