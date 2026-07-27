@@ -82,6 +82,8 @@ JWT gửi qua `Authorization: Bearer <token>`. Member chỉ được xem setting
 
 `DiscoverItem = {tmdbId,type,title,year,overview,posterUrl,backdropUrl,status}`. `POST /request` nhận `{tmdbId,type:'movie'|'series',qualityProfileId}`. Trùng media đã có trả `409`; vượt rate limit trả `429`.
 
+Giới hạn request trong ngày chỉ tính các yêu cầu còn hiệu lực; request đã kết thúc `failed` hoặc `not_found` không tiêu hao hạn mức vì chưa tạo được tác vụ tải.
+
 `GET /discover/search` tìm cả phim lẻ và phim bộ; chuẩn hóa dấu chấm và dấu gạch dưới trong tên release thành khoảng trắng trước khi gọi TMDB (ví dụ `The.Eternal.Fragrance` → `The Eternal Fragrance`).
 
 Quy ước request tải thật:

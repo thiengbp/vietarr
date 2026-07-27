@@ -55,6 +55,7 @@ Xem `docs/API.md`, mục B5.
 - Sau khi phát hiện credential drift trên production, application credentials Radarr/Sonarr trong Prowlarr đã được cập nhật từ khóa hiện hành rồi full-sync; Prowlarr→Radarr/Sonarr và Radarr/Sonarr→Prowlarr/Bitmagnet đều Test PASS, log 401 hai phút gần nhất bằng 0.
 - TMDB search chuẩn hóa tên release có dấu chấm/gạch dưới và gộp cả phim lẻ/phim bộ; phim bộ hiển thị Magnet từ Prowlarr TV nhưng chưa tự động gửi Sonarr trong B5.
 - Radarr release rejection được trả về ngay và request thủ công không có queue quá 90 giây chuyển `not_found` thay vì treo `queued`.
+- Lỗi gửi release luôn hiển thị ngay dưới header của modal; client dừng chờ sau 45 giây và request `failed`/`not_found` không còn tiêu hao hạn mức ngày.
 - Production `sha-7589aea`: query `the.eternal.fragrance` trả đúng series `Thiên Hương` (TMDB 251600), endpoint TV trả 19 release Bitmagnet sạch; bốn request The Odyssey cũ chuyển `not_found`, qBittorrent không có torrent giả.
 - Webhook callback dùng URL nội bộ `http://core:3000/api/v1/webhook/arr`; không đi vòng qua home-domain DNS/Caddy TLS.
 - Block giữ trạng thái ACTIVE đến khi production smoke hoàn tất và Jooh gửi đúng câu `APPROVED BLOCK 05`.

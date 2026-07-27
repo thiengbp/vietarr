@@ -8,6 +8,7 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 - Add authenticated `GET /discover/:tmdbId/releases` and `POST /request/release` APIs without changing frozen B2/B3 contracts.
 
 ### Fixed
+- Keep release-request errors visible below the picker header, stop client requests after 45 seconds, and exclude `failed`/`not_found` attempts from the daily request limit.
 - Search both TMDB movies and series, normalize dotted/underscored release-style names, and expose clean Bitmagnet Magnet links for series without presenting an unsupported Sonarr download action.
 - Surface Radarr release rejection immediately and expire untracked manual requests after 90 seconds instead of leaving the Dashboard at “Đang tìm nguồn tải…” indefinitely.
 - Trigger a real monitored Radarr `MoviesSearch` only when an automatic indexer and enabled download client exist; otherwise return a clear source/client configuration error.

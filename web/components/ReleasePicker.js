@@ -164,6 +164,16 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
           </button>
         </header>
 
+        {error ? (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="shrink-0 border-b border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger sm:px-6"
+          >
+            {error}
+          </div>
+        ) : null}
+
         <div className="overflow-y-auto px-4 py-4 sm:px-6">
           <p className="mb-4 text-xs text-secondary">Kết quả từ Prowlarr/Bitmagnet. Chỉ tải nội dung anh có quyền sử dụng.</p>
           {loading ? <div className="rounded-xl border border-subtle bg-overlay p-5 text-sm text-secondary">Đang tìm nguồn trên Bitmagnet…</div> : null}
@@ -214,8 +224,6 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
               </article>
             ))}
           </div>
-
-          {error ? <div role="alert" className="mt-4 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</div> : null}
           <div aria-live="polite" aria-atomic="true" className="mt-3 min-h-5 text-sm text-success">{notice}</div>
         </div>
 

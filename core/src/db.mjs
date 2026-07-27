@@ -87,7 +87,9 @@ export function createAppDb(path) {
   const countRequestsTodayStmt = db.prepare(`
     SELECT COUNT(*) AS count
     FROM request_log
-    WHERE user_id = ? AND created_at >= ?
+    WHERE user_id = ?
+      AND created_at >= ?
+      AND status NOT IN ('failed', 'not_found')
   `);
   const insertRequestStmt = db.prepare(`
     INSERT INTO request_log (id, user_id, media_type, tmdb_id, arr_id, status, created_at, updated_at)

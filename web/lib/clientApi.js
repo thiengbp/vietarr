@@ -1,4 +1,5 @@
 const CLIENT_API_BASE = process.env.NEXT_PUBLIC_CORE_API_URL || "/api/v1";
+const API_TIMEOUT_MS = 45_000;
 
 export function getToken() {
   if (typeof window === "undefined") return "";
@@ -30,23 +31,33 @@ export function getCurrentUser() {
 }
 
 export async function apiFetch(path, { method = "GET", body, token = getToken() } = {}) {
-  const res = await fetch(`${CLIENT_API_BASE}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  const payload = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const message = payload?.error?.message || `Core API error ${res.status}`;
-    const error = new Error(message);
-    error.status = res.status;
-    error.payload = payload;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${CLIENT_API_BASE}${path}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const message = payload?.error?.message || `Core API error ${res.status}`;
+      const error = new Error(message);
+      error.status = res.status;
+      error.payload = payload;
+      throw error;
+    }
+    return payload;
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error("Yêu cầu quá thời gian, vui lòng thử lại");
     throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-  return payload;
 }
 
 export function wsUrl(token = getToken()) {
