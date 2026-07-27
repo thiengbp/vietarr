@@ -13,6 +13,7 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 - Stop generating Infuse, VLC, HTTP, and SMB links for movies without a real file; desktop UI no longer opens unsupported mobile player URL schemes.
 - Update patched Next.js/PostCSS releases and override Sharp to a non-vulnerable release so the production dependency audit passes.
 - Filter Prowlarr results by the movie title/year and never expose Prowlarr proxy download URLs containing its API key.
+- Serialize custom webhook headers as key/value entries so current Radarr/Sonarr versions accept VietArr realtime notification registration.
 
 ## [1.0.0] - 2026-07-06
 ### Added

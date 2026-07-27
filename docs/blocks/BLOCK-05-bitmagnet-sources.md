@@ -45,7 +45,7 @@ Xem `docs/API.md`, mục B5.
 - [x] Core test: release hợp lệ được push tới Radarr với magnet và TMDB ID đúng.
 - [x] Web lint/build PASS.
 - [x] Modal dùng được ở 390px và desktop; ESC đóng, focus quay lại nút mở.
-- [ ] Production smoke: đăng nhập → mở nguồn của nội dung hợp pháp → thấy kết quả Bitmagnet.
+- [x] Production smoke: token 5 phút → TMDB Big Buck Bunny → 2 release Bitmagnet đã lọc; magnet hợp lệ, không lộ Prowlarr URL/API key.
 
 ## 7. Handoff & Next Block
 - Production Prowlarr indexer `Bitmagnet` dùng Torznab endpoint nội bộ của NAS và đã sync sang Radarr/Sonarr.

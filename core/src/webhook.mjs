@@ -181,7 +181,7 @@ function buildWebhookPayload({ schema, source, webhookUrl, webhookSecret }) {
   let fields = Array.isArray(schema.fields) ? schema.fields : [];
   fields = withField(fields, "url", webhookUrl);
   fields = withField(fields, "method", 1);
-  fields = withField(fields, "headers", `${WEBHOOK_SECRET_HEADER}: ${webhookSecret}`);
+  fields = withField(fields, "headers", [{ key: WEBHOOK_SECRET_HEADER, value: webhookSecret }]);
 
   return {
     ...schema,
