@@ -19,6 +19,7 @@
 
 ## Nguyên tắc bất biến
 - Chuẩn thư mục TRaSH: một root `/data`, hardlink giữa `torrents/` và `media/`.
+- qBittorrent dùng Automatic Torrent Management: category `movies` lưu tại `/data/torrents/movies`, category `tv` lưu tại `/data/torrents/tv`; Radarr/Sonarr import bằng hardlink sang media tương ứng.
 - Các app *arr không publish port ra ngoài — chỉ Caddy + Core là mặt tiền.
 - Config app trên SSD local, media trên NFS. SQLite không bao giờ nằm trên NFS.
 - Không transcode. Không phụ thuộc Plex/Jellyfin.

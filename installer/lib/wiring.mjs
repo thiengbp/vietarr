@@ -296,6 +296,9 @@ async function configureQbit() {
   const headers = { Cookie: cookie, "Content-Type": "application/x-www-form-urlencoded" };
   const prefs = {
     save_path: "/data/torrents",
+    auto_tmm_enabled: true,
+    category_changed_tmm_enabled: true,
+    use_category_paths_in_manual_mode: true,
     web_ui_username: process.env.QBIT_USER,
     web_ui_password: process.env.QBIT_PASS
   };
@@ -307,11 +310,14 @@ async function configureQbit() {
   const categories = await qbitRequest("/api/v2/torrents/categories", { headers });
   const existingCategories = categories.text ? JSON.parse(categories.text) : {};
   for (const category of ["movies", "tv"]) {
-    if (existingCategories[category]) continue;
-    await qbitRequest("/api/v2/torrents/createCategory", {
+    const savePath = `/data/torrents/${category}`;
+    const existing = existingCategories[category];
+    const path = existing ? "/api/v2/torrents/editCategory" : "/api/v2/torrents/createCategory";
+    if (existing?.savePath === savePath) continue;
+    await qbitRequest(path, {
       method: "POST",
       headers,
-      body: new URLSearchParams({ category, savePath: `/data/torrents/${category}` })
+      body: new URLSearchParams({ category, savePath })
     });
   }
 }
