@@ -26,8 +26,8 @@
   "quality": "1080p",
   "status": "available",
   "sizeBytes": 1234567890,
-  "path": "/data/media/movies/Ten Phim (1999)/movie.mp4",
-  "smbPath": "smb://nas/media/media/movies/Ten%20Phim%20(1999)/movie.mp4",
+  "path": "/data/library/movies/Ten Phim (1999)/movie.mp4",
+  "smbPath": "smb://nas/media/library/movies/Ten%20Phim%20(1999)/movie.mp4",
   "hasVietnameseSubtitle": true,
   "warning": null
 }
@@ -54,7 +54,7 @@ Quy ước B2:
 - Deep link Infuse/VLC chỉ dùng trên thiết bị di động có cài ứng dụng tương ứng. Desktop dùng HTTP stream (nếu trình duyệt phát được) hoặc copy HTTP/SMB URL.
 - Khi Radarr/Sonarr/Bazarr down, Core trả cache nếu có và thêm header `X-Vietarr-Cache: stale`; nếu chưa có cache thì trả `502` theo quy ước lỗi.
 - API key *arr không bao giờ xuất hiện trong response. Web chỉ gọi Core.
-- Block 2 đọc config từ `/opt/vietarr/.env`: `RADARR_API_KEY`, `SONARR_API_KEY`, `BAZARR_API_KEY`, `MEDIA_ROOT`, `DOMAIN_SUFFIX`; không tự dò `config.xml`.
+- Block 2 đọc config từ `/opt/vietarr/.env`: `RADARR_API_KEY`, `SONARR_API_KEY`, `BAZARR_API_KEY`, `CORE_MEDIA_ROOT`, `DOMAIN_SUFFIX`; không tự dò `config.xml`. Installer giữ `MEDIA_ROOT` riêng cho đường dẫn mount trên host.
 
 ## B3 — write + auth (draft, freeze khi B3 Release)
 POST `/auth/login` · GET `/discover/trending` · GET `/discover/search?q=` · POST `/request` {tmdbId, type, quality} · GET `/request/:id/progress` · POST `/webhook/arr` (Radarr/Sonarr gọi vào) · WS `/ws?token=`.
@@ -135,7 +135,7 @@ Server events:
   "data": {
     "status": "available",
     "progress": 100,
-    "path": "/data/media/movies/Ten Phim (2026)/movie.mkv"
+    "path": "/data/library/movies/Ten Phim (2026)/movie.mkv"
   },
   "ts": "2026-07-04T02:20:00.000Z"
 }

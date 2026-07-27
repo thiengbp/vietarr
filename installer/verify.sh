@@ -41,9 +41,9 @@ line ""
 
 MEDIA_ROOT="${MEDIA_ROOT:-/data}"
 tmp_a="$MEDIA_ROOT/torrents/.vietarr-hardlink-a"
-tmp_b="$MEDIA_ROOT/media/.vietarr-hardlink-b"
+tmp_b="$MEDIA_ROOT/library/.vietarr-hardlink-b"
 rm -f "$tmp_a" "$tmp_b"
-if mkdir -p "$MEDIA_ROOT/torrents" "$MEDIA_ROOT/media" && printf test > "$tmp_a" && ln "$tmp_a" "$tmp_b"; then
+if mkdir -p "$MEDIA_ROOT/torrents" "$MEDIA_ROOT/library" && printf test > "$tmp_a" && ln "$tmp_a" "$tmp_b"; then
   inode_a="$(stat -c '%i' "$tmp_a" 2>/dev/null || stat -f '%i' "$tmp_a")"
   inode_b="$(stat -c '%i' "$tmp_b" 2>/dev/null || stat -f '%i' "$tmp_b")"
   if [ "$inode_a" = "$inode_b" ]; then

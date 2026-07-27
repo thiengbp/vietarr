@@ -132,7 +132,7 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch, 
     const movie = await discover.movie(tmdbId);
     const rootFolders = await arrJson({ ...config.radarr, path: "/api/v3/rootfolder", fetchImpl });
     const qualityProfiles = await listQualityProfiles("movie");
-    const rootFolderPath = rootFolders[0]?.path || "/data/media/movies";
+    const rootFolderPath = rootFolders[0]?.path || "/data/library/movies";
     const profileId = Number(qualityProfileId || qualityProfiles[0]?.id);
     const added = await arrJson({
       ...config.radarr,

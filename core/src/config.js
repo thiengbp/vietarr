@@ -26,7 +26,7 @@ export function loadConfig() {
   const envPath = process.env.VIETARR_ENV || join(home, ".env");
   const fileEnv = readDotEnv(envPath);
   const env = { ...fileEnv, ...process.env };
-  const mediaRoot = env.MEDIA_ROOT || "/mnt/media/data";
+  const mediaRoot = env.CORE_MEDIA_ROOT || "/data";
   const cachePath = env.CORE_CACHE_PATH || join(home, "core-cache.sqlite");
   const dbPath = env.CORE_DB_PATH || join(home, "core.sqlite");
   mkdirSync(dirname(cachePath), { recursive: true });

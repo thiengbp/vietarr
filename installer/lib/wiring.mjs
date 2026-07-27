@@ -232,7 +232,7 @@ async function ensureQbitDownloadClient({ app, baseUrl, apiKey, category }) {
     });
   }
   await upsertByName(baseUrl, apiKey, "/api/v3/downloadclient", schema);
-  await ensureRootFolder(baseUrl, apiKey, app === "radarr" ? "/data/media/movies" : "/data/media/tv");
+  await ensureRootFolder(baseUrl, apiKey, app === "radarr" ? "/data/library/movies" : "/data/library/tv");
 }
 
 async function ensureProwlarrApplication({ prowlarrKey, implementation, name, baseUrl, apiKey }) {

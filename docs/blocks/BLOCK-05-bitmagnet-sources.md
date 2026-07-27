@@ -59,5 +59,6 @@ Xem `docs/API.md`, mục B5.
 - Production `sha-7589aea`: query `the.eternal.fragrance` trả đúng series `Thiên Hương` (TMDB 251600), endpoint TV trả 19 release Bitmagnet sạch; bốn request The Odyssey cũ chuyển `not_found`, qBittorrent không có torrent giả.
 - Production `sha-31c9a9f`: Core/Web healthy; hạn mức admin `raw=5`, hiệu lực `2/5`; lookup The Odyssey trả 36 nguồn trong 0,9 giây; toàn bộ qBittorrent vẫn có 0 torrent sau lần bấm bị chặn.
 - Production qBittorrent đã bật Automatic Torrent Management và category paths: Interstellar tiếp tục tải tại `/data/torrents/movies`, The Eternal Fragrance tại `/data/torrents/tv`; thư mục gốc không còn dữ liệu rời.
+- ADR-006 được Jooh duyệt ngày 2026-07-28: media root vật lý đổi sang `/volume1/media/{torrents,library}`, container giữ một mount `/data`, thư viện *arr đổi sang `/data/library/{movies,tv}` để cấu trúc NAS rõ ràng mà vẫn hardlink.
 - Webhook callback dùng URL nội bộ `http://core:3000/api/v1/webhook/arr`; không đi vòng qua home-domain DNS/Caddy TLS.
 - Block giữ trạng thái ACTIVE đến khi production smoke hoàn tất và Jooh gửi đúng câu `APPROVED BLOCK 05`.

@@ -27,6 +27,7 @@ services:
       - VIETARR_ADMIN_PASSWORD=${VIETARR_ADMIN_PASSWORD:-}
       - CORE_PUBLIC_URL=https://api.vietarr.{{DOMAIN_SUFFIX}}
       - CORE_WEBHOOK_URL=http://core:3000/api/v1/webhook/arr
+      - CORE_MEDIA_ROOT=/data
       - SMB_BASE_URL=smb://vietarr.{{DOMAIN_SUFFIX}}/media
     volumes:
       - ./appdata/core:/opt/vietarr

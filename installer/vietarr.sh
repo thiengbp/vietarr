@@ -62,8 +62,8 @@ prompt_default() {
 
 validate_media_path() {
   [ -d "$MEDIA_ROOT" ] || die "Media path does not exist: $MEDIA_ROOT"
-  if [ ! -d "$MEDIA_ROOT/media" ] || [ ! -d "$MEDIA_ROOT/torrents" ]; then
-    mkdir -p "$MEDIA_ROOT/media/movies" "$MEDIA_ROOT/media/tv" "$MEDIA_ROOT/torrents/movies" "$MEDIA_ROOT/torrents/tv" 2>/dev/null \
+  if [ ! -d "$MEDIA_ROOT/library" ] || [ ! -d "$MEDIA_ROOT/torrents" ]; then
+    mkdir -p "$MEDIA_ROOT/library/movies" "$MEDIA_ROOT/library/tv" "$MEDIA_ROOT/torrents/movies" "$MEDIA_ROOT/torrents/tv" 2>/dev/null \
       || die "Cannot create TRaSH folders under $MEDIA_ROOT. Fix NFS/permission before install."
   fi
 
@@ -184,7 +184,7 @@ install_command() {
   need_cmd docker
 
   if [ "$non_interactive" -eq 0 ]; then
-    prompt_default MEDIA_ROOT "Media root path" "${MEDIA_ROOT:-/mnt/media/data}"
+    prompt_default MEDIA_ROOT "Media root path" "${MEDIA_ROOT:-/mnt/media}"
     prompt_default TZ "Timezone" "$TZ"
     prompt_default DOMAIN_SUFFIX "Internal domain suffix" "$DOMAIN_SUFFIX"
     prompt_default TMDB_API_KEY "TMDB API key (saved for later blocks)" "$TMDB_API_KEY"

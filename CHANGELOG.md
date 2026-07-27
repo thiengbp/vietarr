@@ -1,4 +1,5 @@
 # Changelog
+
 Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Release = một phiên bản.
 
 ## [Unreleased]
@@ -7,7 +8,11 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 - Add Block 05 Bitmagnet release discovery through Prowlarr with credential-safe magnet links, an accessible responsive source picker, and selected-release push through Radarr to qBittorrent.
 - Add authenticated `GET /discover/:tmdbId/releases` and `POST /request/release` APIs without changing frozen B2/B3 contracts.
 
+### Changed
+- Adopt ADR-006 media layout: `/volume1/media/{torrents,library}` on NAS and `/data/{torrents,library}` in containers, preserving a single mount for hardlinks.
+
 ### Fixed
+- Separate the host `MEDIA_ROOT` from Core's container path `CORE_MEDIA_ROOT=/data` so HTTP streaming resolves imported files inside the container.
 - Enable qBittorrent automatic torrent management and category paths so movie downloads land in `/data/torrents/movies` and series downloads in `/data/torrents/tv`.
 - Serve the qBittorrent Web UI on the established `qbit.<domain>` hostname while retaining `qbittorrent.<domain>` as a compatibility alias.
 - Keep release-request errors visible below the picker header, stop client requests after 45 seconds, and exclude `failed`/`not_found` attempts from the daily request limit.
