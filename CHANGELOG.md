@@ -3,6 +3,11 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 
 ## [Unreleased]
 
+### Fixed
+- Trigger a real monitored Radarr `MoviesSearch` only when an automatic indexer and enabled download client exist; otherwise return a clear source/client configuration error.
+- Report request state from the real Radarr command, queue, and movie file instead of presenting `queued` as fake download progress.
+- Stop generating Infuse, VLC, HTTP, and SMB links for movies without a real file; desktop UI no longer opens unsupported mobile player URL schemes.
+
 ## [1.0.0] - 2026-07-06
 ### Added
 - BLOCK-04 release packaging hardening: MIT `LICENSE`, `CONTRIBUTING.md`, GitHub issue templates, PR template, and bilingual README with screenshot placeholder.

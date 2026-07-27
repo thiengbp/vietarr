@@ -50,6 +50,8 @@
 Quy ước B2:
 - `id` là ID nội bộ ổn định dạng `<source>-<arrId>`; Block 2 không tạo media/request mới.
 - `status`: `available | missing | queued | downloading | unknown`.
+- `GET /play/:mediaId/options` chỉ trả URL phát/SMB khi Radarr có `movieFile.path`; phim chưa có file trả các URL bằng `null` để UI không mở deep link không hợp lệ.
+- Deep link Infuse/VLC chỉ dùng trên thiết bị di động có cài ứng dụng tương ứng. Desktop dùng HTTP stream (nếu trình duyệt phát được) hoặc copy HTTP/SMB URL.
 - Khi Radarr/Sonarr/Bazarr down, Core trả cache nếu có và thêm header `X-Vietarr-Cache: stale`; nếu chưa có cache thì trả `502` theo quy ước lỗi.
 - API key *arr không bao giờ xuất hiện trong response. Web chỉ gọi Core.
 - Block 2 đọc config từ `/opt/vietarr/.env`: `RADARR_API_KEY`, `SONARR_API_KEY`, `BAZARR_API_KEY`, `MEDIA_ROOT`, `DOMAIN_SUFFIX`; không tự dò `config.xml`.
@@ -79,6 +81,11 @@ JWT gửi qua `Authorization: Bearer <token>`. Member chỉ được xem setting
 | GET | `/request/:id/progress` | JWT | `{status,progress,eta}` |
 
 `DiscoverItem = {tmdbId,type,title,year,overview,posterUrl,backdropUrl,status}`. `POST /request` nhận `{tmdbId,type:'movie'|'series',qualityProfileId}`. Trùng media đã có trả `409`; vượt rate limit trả `429`.
+
+Quy ước request tải thật:
+- Trước khi nhận request, Core xác nhận Radarr có ít nhất một indexer bật Automatic Search và một download client đang bật; thiếu nguồn/client trả lỗi rõ ràng, không tạo trạng thái “Đang tải” giả.
+- Core đặt phim `monitored=true` và phát lệnh `MoviesSearch`. `queued` nghĩa là đang tìm nguồn; chỉ dùng `downloading` khi phim đã xuất hiện trong Radarr queue.
+- `GET /request/:id/progress` đối chiếu movie, command và queue thật của Radarr để trả trạng thái/phần trăm; search hoàn tất mà không grab được release trả `not_found`.
 
 ### B3 realtime WS
 Client kết nối `ws://core:3000/ws?token=<JWT>` hoặc qua Caddy `wss://vietarr.home.arpa/ws?token=<JWT>`.

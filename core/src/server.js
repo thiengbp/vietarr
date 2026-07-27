@@ -147,9 +147,9 @@ export function createServer(options = {}) {
     }
   });
 
-  app.get("/api/v1/request/:id/progress", requireAuth, (req, res, next) => {
+  app.get("/api/v1/request/:id/progress", requireAuth, async (req, res, next) => {
     try {
-      res.json(requests.progress(req.params.id));
+      res.json(await requests.progress(req.params.id));
     } catch (error) {
       next(error);
     }

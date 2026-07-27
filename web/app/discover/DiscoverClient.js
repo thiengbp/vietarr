@@ -50,19 +50,69 @@ export function DiscoverClient() {
   useWebSocket({
     onEvent: (event) => {
       if (!["grab", "progress", "import"].includes(event.type)) return;
-      setStates((current) => ({
-        ...current,
-        [event.mediaId]: {
-          status: event.data?.status || (event.type === "import" ? "available" : "downloading"),
-          progress: event.data?.progress ?? current[event.mediaId]?.progress ?? 0,
-          title: event.data?.title
-        }
-      }));
+      setStates((current) => {
+        const previous = current[event.mediaId] || {};
+        return {
+          ...current,
+          [event.mediaId]: {
+            ...previous,
+            status: event.data?.status || (event.type === "import" ? "available" : "downloading"),
+            progress: event.data?.progress ?? previous.progress ?? 0,
+            title: event.data?.title || previous.title,
+            error: event.data?.error || ""
+          }
+        };
+      });
       if (event.type === "import") {
         setToast(`${event.data?.title || "Phim"} đã tải xong`);
       }
     }
   });
+
+  const pendingRequestIds = useMemo(() => {
+    const terminal = new Set(["available", "not_found", "failed"]);
+    return [...new Set(Object.values(states)
+      .filter((state) => state.requestId && !terminal.has(state.status))
+      .map((state) => state.requestId))]
+      .sort()
+      .join(",");
+  }, [states]);
+
+  useEffect(() => {
+    if (!pendingRequestIds) return undefined;
+    const requestIds = pendingRequestIds.split(",");
+    let active = true;
+    let timer;
+
+    async function pollProgress() {
+      const updates = await Promise.all(requestIds.map(async (requestId) => {
+        try {
+          return { requestId, data: await apiFetch(`/request/${encodeURIComponent(requestId)}/progress`) };
+        } catch (pollError) {
+          return { requestId, error: pollError.message };
+        }
+      }));
+      if (!active) return;
+      setStates((current) => {
+        const next = { ...current };
+        for (const [key, state] of Object.entries(current)) {
+          const update = updates.find((entry) => entry.requestId === state.requestId);
+          if (!update) continue;
+          next[key] = update.data
+            ? { ...state, ...update.data, error: update.data.error || "" }
+            : { ...state, error: update.error };
+        }
+        return next;
+      });
+      timer = window.setTimeout(pollProgress, 5000);
+    }
+
+    void pollProgress();
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [pendingRequestIds]);
 
   const byTitle = useMemo(() => {
     const map = {};
@@ -75,8 +125,8 @@ export function DiscoverClient() {
   function onRequested(item, result) {
     setStates((current) => ({
       ...current,
-      [result.mediaId]: { status: result.status, progress: 0, title: item.title },
-      [itemKey(item)]: { status: result.status, progress: 0, mediaId: result.mediaId, title: item.title }
+      [result.mediaId]: { status: result.status, progress: 0, requestId: result.requestId, title: item.title },
+      [itemKey(item)]: { status: result.status, progress: 0, requestId: result.requestId, mediaId: result.mediaId, title: item.title }
     }));
   }
 

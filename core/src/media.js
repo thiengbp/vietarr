@@ -59,7 +59,7 @@ export function isBrowserPlayable(file) {
 
 export function mapMovie(movie, config) {
   const file = movie.movieFile || null;
-  const filePath = file?.path || movie.path || null;
+  const filePath = file?.path || null;
   return {
     id: `movie-${movie.id}`,
     source: "radarr",
@@ -153,7 +153,16 @@ export function subtitleStatus(movie) {
 
 export function playOptions(media, config) {
   const file = media.movieFile || null;
-  const filePath = file?.path || media.path || null;
+  const filePath = file?.path || null;
+  if (!filePath) {
+    return {
+      infuseUrl: null,
+      vlcUrl: null,
+      smbPath: null,
+      httpStreamUrl: null,
+      browserPlayable: false
+    };
+  }
   const smbPath = toSmbPath(filePath, config);
   const streamUrl = `${config.publicBaseUrl.replace(/\/$/, "")}/api/v1/stream/movie-${media.id}`;
   const browserPlayable = isBrowserPlayable(file);

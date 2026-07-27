@@ -47,21 +47,34 @@ export function RequestButton({ item, state, onRequested, qualityProfiles = null
   }
 
   const progress = state?.progress ?? 0;
-  const downloading = state?.status === "downloading" || state?.status === "queued";
+  const queued = state?.status === "queued" || state?.status === "searching";
+  const downloading = state?.status === "downloading";
   const available = state?.status === "available";
+  const terminalError = state?.status === "not_found" || state?.status === "failed";
+  const canRequest = !queued && !downloading && !available;
 
   return (
     <div className="mt-3 space-y-2">
+      {queued ? (
+        <div>
+          <div className="h-2 overflow-hidden rounded-full bg-overlay">
+            <div className="h-full w-1/4 animate-pulse bg-info" />
+          </div>
+          <p className="mt-1 text-xs text-info">Đang tìm nguồn tải...</p>
+        </div>
+      ) : null}
       {downloading ? (
         <div>
           <div className="h-2 overflow-hidden rounded-full bg-overlay">
             <div className="h-full bg-info transition-all" style={{ width: `${Math.max(3, progress)}%` }} />
           </div>
           <p className="mt-1 text-xs text-info">{progress}% · Đang tải</p>
+          {state?.eta ? <p className="mt-1 text-xs text-secondary">Còn khoảng {state.eta}</p> : null}
         </div>
       ) : null}
       {available ? <p className="text-xs text-success">Đã tải xong</p> : null}
-      {!available ? (
+      {terminalError ? <p className="text-xs text-danger">{state?.error || (state.status === "not_found" ? "Không tìm thấy nguồn phù hợp" : "Tải phim thất bại")}</p> : null}
+      {canRequest ? (
         <div className="flex gap-2">
           <select
             className="min-w-0 flex-1 rounded-md border border-subtle bg-overlay px-2 py-2 text-xs text-primary"
@@ -85,6 +98,7 @@ export function RequestButton({ item, state, onRequested, qualityProfiles = null
         </div>
       ) : null}
       {error ? <p className="text-xs text-danger">{error}</p> : null}
+      {!terminalError && state?.error ? <p className="text-xs text-danger">{state.error}</p> : null}
     </div>
   );
 }

@@ -35,6 +35,7 @@ export function migrateAppSchema(db) {
       media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'series')),
       tmdb_id INTEGER NOT NULL,
       arr_id INTEGER,
+      command_id INTEGER,
       status TEXT NOT NULL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -47,6 +48,11 @@ export function migrateAppSchema(db) {
       updated_at TEXT NOT NULL
     );
   `);
+
+  const requestLogColumns = db.prepare("PRAGMA table_info(request_log)").all();
+  if (!requestLogColumns.some((column) => column.name === "command_id")) {
+    db.exec("ALTER TABLE request_log ADD COLUMN command_id INTEGER");
+  }
 
   db.prepare(`
     INSERT INTO settings (key, value, updated_at)
@@ -88,7 +94,14 @@ export function createAppDb(path) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const getRequestStmt = db.prepare("SELECT * FROM request_log WHERE id = ?");
-  const updateRequestStmt = db.prepare("UPDATE request_log SET arr_id = ?, status = ?, updated_at = ? WHERE id = ?");
+  const updateRequestStmt = db.prepare(`
+    UPDATE request_log
+    SET arr_id = COALESCE(?, arr_id),
+        command_id = COALESCE(?, command_id),
+        status = ?,
+        updated_at = ?
+    WHERE id = ?
+  `);
 
   return {
     db,
@@ -145,8 +158,8 @@ export function createAppDb(path) {
       insertRequestStmt.run(id, userId, mediaType, tmdbId, arrId, status, ts, ts);
       return getRequestStmt.get(id);
     },
-    updateRequestLog({ id, arrId = null, status }) {
-      updateRequestStmt.run(arrId, status, nowIso(), id);
+    updateRequestLog({ id, arrId = null, commandId = null, status }) {
+      updateRequestStmt.run(arrId, commandId, status, nowIso(), id);
       return getRequestStmt.get(id);
     },
     getRequestLog(id) {
