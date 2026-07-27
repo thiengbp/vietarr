@@ -57,5 +57,6 @@ Xem `docs/API.md`, mục B5.
 - Radarr release rejection được trả về ngay và request thủ công không có queue quá 90 giây chuyển `not_found` thay vì treo `queued`.
 - Lỗi gửi release luôn hiển thị ngay dưới header của modal; client dừng chờ sau 45 giây và request `failed`/`not_found` không còn tiêu hao hạn mức ngày.
 - Production `sha-7589aea`: query `the.eternal.fragrance` trả đúng series `Thiên Hương` (TMDB 251600), endpoint TV trả 19 release Bitmagnet sạch; bốn request The Odyssey cũ chuyển `not_found`, qBittorrent không có torrent giả.
+- Production `sha-31c9a9f`: Core/Web healthy; hạn mức admin `raw=5`, hiệu lực `2/5`; lookup The Odyssey trả 36 nguồn trong 0,9 giây; toàn bộ qBittorrent vẫn có 0 torrent sau lần bấm bị chặn.
 - Webhook callback dùng URL nội bộ `http://core:3000/api/v1/webhook/arr`; không đi vòng qua home-domain DNS/Caddy TLS.
 - Block giữ trạng thái ACTIVE đến khi production smoke hoàn tất và Jooh gửi đúng câu `APPROVED BLOCK 05`.
