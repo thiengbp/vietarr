@@ -62,7 +62,7 @@ Xem `docs/API.md`, mục B6.
 - [x] Responsive không horizontal scroll tại 320/375/414/768px — browser metrics PASS.
 - [x] Keyboard focus/tab semantics và reduced motion PASS — ArrowLeft/Right/Home/End + global focus ring.
 - [x] Hallmark slop-test 58/58 PASS.
-- [ ] Production smoke: Core/Web healthy, B6 feeds trả dữ liệu và homepage render đúng tại `vietarr.home.arpa`.
+- [x] Production smoke PASS — Core/Web `sha-2b76ec7` healthy; feed hôm nay/tuần trả 20 mục, 19 thể loại và homepage authenticated trả HTTP 200 tại `vietarr.home.arpa`.
 
 ## 7. Release
 
@@ -77,4 +77,5 @@ Xem `docs/API.md`, mục B6.
 - Core có hai endpoint JWT mới tại `/api/v1/home/discover` và `/api/v1/home/genres`; TMDB key không đi qua Web.
 - Trang `/` dùng server data B2 cho hero/activity/library và client data B6 cho discovery, nên TMDB lỗi không làm mất thư viện.
 - “Xem gần đây” lưu tối đa 12 movie ID trong `vietarr_recent_movies`; không có playback percentage.
-- QA local hoàn tất; Block giữ ACTIVE đến production smoke và câu `APPROVED BLOCK 06`.
+- Production deploy hoàn tất với Core/Web `sha-2b76ec7`; không khởi động lại ứng dụng media nào khác.
+- QA local và production smoke hoàn tất; Block giữ ACTIVE đến câu `APPROVED BLOCK 06`.
