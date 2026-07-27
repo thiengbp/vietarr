@@ -14,6 +14,7 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 - Update patched Next.js/PostCSS releases and override Sharp to a non-vulnerable release so the production dependency audit passes.
 - Filter Prowlarr results by the movie title/year and never expose Prowlarr proxy download URLs containing its API key.
 - Serialize custom webhook headers as key/value entries so current Radarr/Sonarr versions accept VietArr realtime notification registration.
+- Register *arr webhooks against the internal Core service URL so containers do not depend on home-domain DNS or Caddy TLS trust.
 
 ## [1.0.0] - 2026-07-06
 ### Added
