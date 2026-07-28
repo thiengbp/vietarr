@@ -11,6 +11,9 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 ### Changed
 - Turn the root movie grid into an honest media dashboard while retaining existing routes, Vietnamese terminology, and VietArr's dark amber design system.
 
+### Fixed
+- Keep discovery artwork inside each poster card instead of letting `next/image` fill the viewport, and reduce the responsive hero height so download activity remains visible sooner.
+
 ## [1.1.0] - 2026-07-28
 
 ### Added

@@ -195,7 +195,7 @@ a {
 .home-hero {
   position: relative;
   display: grid;
-  min-height: 31rem;
+  min-height: clamp(22rem, 54svh, 27rem);
   isolation: isolate;
   overflow: hidden;
   background: var(--color-paper-2);
@@ -609,6 +609,7 @@ a {
 }
 
 .discover-card__media {
+  position: relative;
   display: block;
   aspect-ratio: 2 / 3;
   overflow: hidden;
@@ -749,7 +750,7 @@ a {
 
 @media (min-width: 60rem) {
   .home-hero {
-    min-height: 38rem;
+    min-height: clamp(24rem, 56svh, 30rem);
     margin-inline: auto;
   }
 

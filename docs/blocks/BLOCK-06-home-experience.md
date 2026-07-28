@@ -63,6 +63,7 @@ Xem `docs/API.md`, mục B6.
 - [x] Keyboard focus/tab semantics và reduced motion PASS — ArrowLeft/Right/Home/End + global focus ring.
 - [x] Hallmark slop-test 58/58 PASS.
 - [x] Production smoke PASS — Core/Web `sha-2b76ec7` healthy; feed hôm nay/tuần trả 20 mục, 19 thể loại và homepage authenticated trả HTTP 200 tại `vietarr.home.arpa`.
+- [x] Follow-up visual regression PASS — Hero 403px tại viewport desktop 720px; poster hoạt động và khám phá có ảnh thật, đúng khung; mobile 375px không tràn ngang.
 
 ## 7. Release
 
@@ -78,4 +79,5 @@ Xem `docs/API.md`, mục B6.
 - Trang `/` dùng server data B2 cho hero/activity/library và client data B6 cho discovery, nên TMDB lỗi không làm mất thư viện.
 - “Xem gần đây” lưu tối đa 12 movie ID trong `vietarr_recent_movies`; không có playback percentage.
 - Production deploy hoàn tất với Core/Web `sha-2b76ec7`; không khởi động lại ứng dụng media nào khác.
+- Bản vá follow-up giữ ảnh Khám phá trong containing block và giới hạn Hero theo viewport; kiểm tra desktop/mobile bằng trình duyệt thật PASS.
 - QA local và production smoke hoàn tất; Block giữ ACTIVE đến câu `APPROVED BLOCK 06`.
