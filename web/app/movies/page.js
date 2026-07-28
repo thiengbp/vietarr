@@ -1,6 +1,6 @@
 import { AppHeader } from "@/components/AppHeader";
+import { CountryLibraryGrid } from "@/components/CountryLibraryGrid";
 import { EmptyState } from "@/components/EmptyState";
-import { PosterCard } from "@/components/PosterCard";
 import { getMovies } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -20,11 +20,7 @@ export default async function MoviesPage() {
           </p>
         </div>
         {movies.length ? (
-          <div className="poster-grid">
-            {movies.map((movie) => (
-              <PosterCard key={movie.id} item={movie} href={`/movies/${movie.id}`} />
-            ))}
-          </div>
+          <CountryLibraryGrid items={movies} type="movie" />
         ) : (
           <EmptyState
             title="Chưa có phim lẻ"

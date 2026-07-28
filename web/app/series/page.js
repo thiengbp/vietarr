@@ -1,6 +1,6 @@
 import { AppHeader } from "@/components/AppHeader";
+import { CountryLibraryGrid } from "@/components/CountryLibraryGrid";
 import { EmptyState } from "@/components/EmptyState";
-import { PosterCard } from "@/components/PosterCard";
 import { getSeries } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +16,7 @@ export default async function SeriesPage() {
           <p className="mt-1 text-sm text-secondary">{series.length.toLocaleString("vi-VN")} bộ</p>
         </div>
         {series.length ? (
-          <div className="poster-grid">
-            {series.map((item) => (
-              <PosterCard key={item.id} item={item} href="/series" />
-            ))}
-          </div>
+          <CountryLibraryGrid items={series} type="series" />
         ) : (
           <EmptyState
             title="Chưa có phim bộ"

@@ -1,3 +1,5 @@
+import { classifyCountryGroups } from "./countries.mjs";
+
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 const BACKDROP_BASE = "https://image.tmdb.org/t/p/w780";
@@ -17,6 +19,10 @@ function mapItem(item, type = "movie") {
     type,
     title,
     year: date ? Number(date.slice(0, 4)) : null,
+    countryGroups: classifyCountryGroups({
+      originCountries: item.origin_country || [],
+      originalLanguage: item.original_language
+    }),
     overview: item.overview || "",
     posterUrl: item.poster_path ? `${IMAGE_BASE}${item.poster_path}` : null,
     backdropUrl: item.backdrop_path ? `${BACKDROP_BASE}${item.backdrop_path}` : null,

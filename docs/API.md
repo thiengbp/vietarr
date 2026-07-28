@@ -21,6 +21,7 @@
   "tmdbId": 550,
   "title": "Tên phim",
   "year": 1999,
+  "countryGroups": ["western"],
   "posterUrl": "https://...",
   "backdropUrl": "https://...",
   "quality": "1080p",
@@ -80,7 +81,9 @@ JWT gửi qua `Authorization: Bearer <token>`. Member chỉ được xem setting
 | POST | `/request` | JWT | `{requestId,status,mediaId}` |
 | GET | `/request/:id/progress` | JWT | `{status,progress,eta}` |
 
-`DiscoverItem = {tmdbId,type,title,year,overview,posterUrl,backdropUrl,status}`. `POST /request` nhận `{tmdbId,type:'movie'|'series',qualityProfileId}`. Trùng media đã có trả `409`; vượt rate limit trả `429`.
+`DiscoverItem = {tmdbId,type,title,year,countryGroups,overview,posterUrl,backdropUrl,status}`. `POST /request` nhận `{tmdbId,type:'movie'|'series',qualityProfileId}`. Trùng media đã có trả `409`; vượt rate limit trả `429`.
+
+`countryGroups` là trường additive theo ADR-009, nhận một hoặc nhiều giá trị `vietnam | china | korea | japan | thailand | western | other`. Nguồn có mã quốc gia được ưu tiên; nếu không có, Core suy ra từ ngôn ngữ gốc.
 
 Giới hạn request trong ngày chỉ tính các yêu cầu còn hiệu lực; request đã kết thúc `failed` hoặc `not_found` không tiêu hao hạn mức vì chưa tạo được tác vụ tải.
 
@@ -197,6 +200,7 @@ Quy ước B6:
 - `feed=today` dùng TMDB trending movie theo ngày; `week` theo tuần; `popular` dùng danh sách phổ biến.
 - `feed=genre` bắt buộc `genreId` là số nguyên dương và dùng TMDB discover movie sắp theo độ phổ biến.
 - `DiscoverItem` giữ nguyên schema B3; Web không nhận TMDB key.
+- Phim lẻ, phim bộ và Khám phá dùng `countryGroups` để lọc cục bộ; bộ lọc không thay đổi feed hay phát sinh request tải.
 - Trang chủ chỉ chọn hero từ `MediaSummary.status='available'`; nội dung thiếu file không được trình bày như có thể xem.
 - “Xem gần đây” là lịch sử mở trang chi tiết lưu cục bộ trên thiết bị. B6 chưa có playback progress và không dùng nhãn “Xem tiếp”.
 

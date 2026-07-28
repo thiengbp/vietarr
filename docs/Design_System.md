@@ -63,6 +63,12 @@ Ghi chú: accent **cam hổ phách** thay vì đỏ Netflix — tránh cảm gi�
 | `MediaRail` | hàng poster ngang có tiêu đề, mô tả và liên kết ngữ cảnh | P6 |
 | `HomeDiscoverShelf` | feed Hôm nay/Tuần này/Phổ biến + lọc thể loại | P6 |
 | `RecentlyViewed` | lịch sử mở phim cục bộ, không giả tiến độ phát | P6 |
+| `CountryFilter` | chip Tất cả/Việt Nam/Trung Quốc/Hàn Quốc/Nhật Bản/Thái Lan/Âu Mỹ/Khác, chỉ hiện nhóm có kết quả | P6 |
+
+### 3.2. Bộ lọc quốc gia
+- Là bộ lọc phụ trong Phim lẻ, Phim bộ và Khám phá; không thêm vào navigation chính hoặc Trang chủ.
+- Chip có hit target tối thiểu 44px, `aria-pressed`, số lượng kết quả và cuộn ngang trên mobile.
+- Dữ liệu chưa phân loại thuộc “Khác”; phim hợp tác có thể xuất hiện trong nhiều nhóm.
 
 ### 3.1. Trang chủ
 - Macrostructure: **Ecosystem Index** — nhiều bề mặt khám phá nhưng không xếp các carousel lặp lại vô hạn.

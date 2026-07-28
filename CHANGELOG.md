@@ -7,6 +7,7 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 ### Added
 - Add Block 06 Home Experience with a real-library hero, recent viewing history, download activity, discovery feeds, genre filters, and an available-only library surface.
 - Add authenticated home discovery APIs for TMDB day/week/popular feeds and movie genres without changing frozen B2/B3/B5 contracts.
+- Add reusable country-group filters to movie, series, and discovery grids with multi-group support and original-language fallback.
 
 ### Changed
 - Turn the root movie grid into an honest media dashboard while retaining existing routes, Vietnamese terminology, and VietArr's dark amber design system.

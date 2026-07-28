@@ -14,6 +14,7 @@ Trang `/` trở thành media dashboard hữu ích: người dùng thấy ngay m�
 - “Xem gần đây” lưu cục bộ trên trình duyệt.
 - Tách hoạt động tải khỏi thư viện xem được.
 - Feed TMDB Hôm nay/Tuần này/Phổ biến và lọc thể loại.
+- Bộ lọc nhóm quốc gia trong Phim lẻ, Phim bộ và Khám phá theo ADR-009.
 - Responsive 320/375/414/768px, keyboard/focus, reduced motion.
 - Giữ route tree, auth và luồng request hiện có.
 
@@ -21,7 +22,7 @@ Trang `/` trở thành media dashboard hữu ích: người dùng thấy ngay m�
 - Không giả playback progress hoặc dùng nhãn “Xem tiếp”.
 - Không tích hợp Plex/Jellyfin/Trakt trong B6.
 - Không autoplay carousel/video.
-- Không thay đổi B2/B3/B5 contract.
+- Không thay đổi hành vi B2/B3/B5; ADR-009 chỉ thêm field metadata tương thích ngược.
 - Không deploy production nếu chưa được yêu cầu rõ.
 
 ## 3. Architecture
@@ -50,13 +51,14 @@ Xem `docs/API.md`, mục B6.
 - [x] Thêm Core home feeds/genres và test.
 - [x] Xây hero, recent/activity/discovery/library surfaces.
 - [x] Tách Home và thư viện phim lẻ theo ADR-008; thêm `/movies` và điều hướng năm mục.
+- [x] Chuẩn hóa `countryGroups` và bộ lọc quốc gia theo ADR-009.
 - [x] Chuẩn hóa tokens, responsive và accessibility.
 - [x] Chạy QA và cập nhật handoff.
 
 ## 6. QA / Definition of Done
 
 - [x] Core test: today/week/popular/genre map đúng TMDB path và validation.
-- [x] Core full test PASS — 17/17.
+- [x] Core full test PASS — 20/20.
 - [x] Web lint/build PASS — 0 lỗi lint, Next production build thành công.
 - [x] Không có hero từ phim chưa có file — selection chỉ từ `availableMovies`.
 - [x] Discovery error không làm mất thư viện — browser smoke PASS.
@@ -67,6 +69,7 @@ Xem `docs/API.md`, mục B6.
 - [x] Follow-up production regression PASS — Web `sha-0d88186`; Hero 403px tại viewport desktop 720px; poster hoạt động và khám phá có ảnh thật, đúng khung; mobile 375px không tràn ngang.
 - [x] Sonarr diagnostic PASS — API/root folder healthy nhưng thư viện thực tế có 0 series; UI không giả dữ liệu và hướng người dùng sang Khám phá.
 - [x] Navigation production smoke PASS — Web `sha-6402324`; `/movies` trả 5 phim/5 poster, điều hướng đủ năm mục, `/series` hiển thị đúng Sonarr 0 bộ và CTA Khám phá.
+- [x] Country filter browser regression PASS — lọc thư viện/Khám phá, phim hợp tác đa nhóm, `aria-pressed`, hit target mobile 44px và không tràn ngang tại 375px.
 
 ## 7. Release
 
@@ -84,4 +87,5 @@ Xem `docs/API.md`, mục B6.
 - Production hiện chạy Core `sha-2b76ec7` và Web `sha-6402324`; các bản vá chỉ recreate Web, không khởi động lại Core hay ứng dụng media nào khác.
 - Bản vá follow-up giữ ảnh Khám phá trong containing block và giới hạn Hero theo viewport; kiểm tra desktop/mobile trên production bằng trình duyệt thật PASS.
 - ADR-008 tách `/movies` khỏi Home và giữ `/series` trung thực với Sonarr; file TV tải rời cần được import vào Sonarr để xuất hiện.
+- ADR-009 thêm bộ lọc quốc gia cục bộ; metadata thiếu mã quốc gia dùng ngôn ngữ gốc làm fallback và không gọi thêm API theo từng poster.
 - QA local và production smoke hoàn tất; Block giữ ACTIVE đến câu `APPROVED BLOCK 06`.

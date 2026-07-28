@@ -18,7 +18,7 @@ test("release-style separators are normalized before searching TMDB", async () =
       const url = new URL(input);
       requestedQueries.push(url.searchParams.get("query"));
       if (url.pathname.endsWith("/search/movie")) return json({ page: 1, total_pages: 1, results: [] });
-      return json({ page: 1, total_pages: 1, results: [{ id: 251600, name: "Thiên Hương", first_air_date: "2026-01-01" }] });
+      return json({ page: 1, total_pages: 1, results: [{ id: 251600, name: "Thiên Hương", first_air_date: "2026-01-01", origin_country: ["CN"], original_language: "zh" }] });
     }
   });
 
@@ -27,6 +27,7 @@ test("release-style separators are normalized before searching TMDB", async () =
   assert.deepEqual(requestedQueries, ["The Eternal Fragrance", "The Eternal Fragrance"]);
   assert.equal(result.results[0].title, "Thiên Hương");
   assert.equal(result.results[0].type, "series");
+  assert.deepEqual(result.results[0].countryGroups, ["china"]);
 });
 
 test("home feeds map to honest TMDB endpoints", async () => {

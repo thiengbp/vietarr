@@ -1,5 +1,6 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { extname, normalize } from "node:path";
+import { classifyCountryGroups } from "./countries.mjs";
 
 const CONTENT_TYPES = {
   ".mp4": "video/mp4",
@@ -66,6 +67,7 @@ export function mapMovie(movie, config) {
     tmdbId: movie.tmdbId || null,
     title: movie.title,
     year: movie.year || null,
+    countryGroups: classifyCountryGroups({ originalLanguage: movie.originalLanguage }),
     posterUrl: imageUrl(movie.images, ["poster", "cover"]),
     backdropUrl: imageUrl(movie.images, ["fanart", "background", "banner"]),
     quality: qualityName(file),
@@ -90,6 +92,10 @@ export function mapSeries(series, config) {
     tvdbId: series.tvdbId || null,
     title: series.title,
     year: series.year || null,
+    countryGroups: classifyCountryGroups({
+      originCountries: series.originCountry || series.originCountries || [],
+      originalLanguage: series.originalLanguage
+    }),
     posterUrl: imageUrl(series.images, ["poster", "cover"]),
     backdropUrl: imageUrl(series.images, ["fanart", "background", "banner"]),
     quality: series.qualityProfileId ? `Profile ${series.qualityProfileId}` : null,
