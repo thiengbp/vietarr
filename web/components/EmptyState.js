@@ -1,4 +1,6 @@
-export function EmptyState({ title = "Thư viện trống", detail = "Chưa có nội dung để hiển thị." }) {
+import Link from "next/link";
+
+export function EmptyState({ title = "Thư viện trống", detail = "Chưa có nội dung để hiển thị.", actionHref, actionLabel }) {
   return (
     <div className="mx-auto flex min-h-[320px] max-w-md flex-col items-center justify-center text-center">
       <div className="mb-5 aspect-[2/3] w-28 rounded-xl border border-subtle bg-raised shadow-poster">
@@ -8,6 +10,11 @@ export function EmptyState({ title = "Thư viện trống", detail = "Chưa có 
       </div>
       <h2 className="text-xl font-semibold text-primary">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-secondary">{detail}</p>
+      {actionHref && actionLabel ? (
+        <Link className="home-button home-button--primary mt-5" href={actionHref}>
+          {actionLabel}
+        </Link>
+      ) : null}
     </div>
   );
 }

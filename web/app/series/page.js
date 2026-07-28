@@ -22,7 +22,12 @@ export default async function SeriesPage() {
             ))}
           </div>
         ) : (
-          <EmptyState title="Chưa có phim bộ" detail="Sonarr chưa trả về phim bộ nào trong thư viện." />
+          <EmptyState
+            title="Chưa có phim bộ"
+            detail="Sonarr chưa có bộ nào trong thư viện. File tải rời cần được thêm hoặc import vào Sonarr trước khi VietArr hiển thị."
+            actionHref="/discover"
+            actionLabel="Tìm phim bộ"
+          />
         )}
       </main>
     </>

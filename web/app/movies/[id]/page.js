@@ -32,8 +32,8 @@ export default async function MovieDetailPage({ params }) {
             </div>
           </div>
           <div className="flex max-w-3xl flex-1 flex-col justify-end py-2">
-            <Link href="/" className="mb-5 text-sm text-secondary hover:text-primary">
-              ← Thư viện
+            <Link href="/movies" className="mb-5 text-sm text-secondary hover:text-primary">
+              ← Phim lẻ
             </Link>
             <div className="mb-3 flex flex-wrap gap-2">
               <StatusBadge status={movie.status} />

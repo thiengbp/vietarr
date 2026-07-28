@@ -10,6 +10,8 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 
 ### Changed
 - Turn the root movie grid into an honest media dashboard while retaining existing routes, Vietnamese terminology, and VietArr's dark amber design system.
+- Separate the Home Experience from a dedicated `/movies` library and expose the requested `Trang chủ | Phim lẻ | Phim bộ | Khám phá | Admin` navigation.
+- Explain the Sonarr-empty state on `/series` and provide a direct path to discovery without pretending torrent files are imported series.
 
 ### Fixed
 - Keep discovery artwork inside each poster card instead of letting `next/image` fill the viewport, and reduce the responsive hero height so download activity remains visible sooner.

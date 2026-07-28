@@ -49,6 +49,7 @@ Xem `docs/API.md`, mục B6.
 - [x] Ghi ADR-007 và API contract B6.
 - [x] Thêm Core home feeds/genres và test.
 - [x] Xây hero, recent/activity/discovery/library surfaces.
+- [x] Tách Home và thư viện phim lẻ theo ADR-008; thêm `/movies` và điều hướng năm mục.
 - [x] Chuẩn hóa tokens, responsive và accessibility.
 - [x] Chạy QA và cập nhật handoff.
 
@@ -64,6 +65,7 @@ Xem `docs/API.md`, mục B6.
 - [x] Hallmark slop-test 58/58 PASS.
 - [x] Production smoke PASS — Core/Web `sha-2b76ec7` healthy; feed hôm nay/tuần trả 20 mục, 19 thể loại và homepage authenticated trả HTTP 200 tại `vietarr.home.arpa`.
 - [x] Follow-up production regression PASS — Web `sha-0d88186`; Hero 403px tại viewport desktop 720px; poster hoạt động và khám phá có ảnh thật, đúng khung; mobile 375px không tràn ngang.
+- [x] Sonarr diagnostic PASS — API/root folder healthy nhưng thư viện thực tế có 0 series; UI không giả dữ liệu và hướng người dùng sang Khám phá.
 
 ## 7. Release
 
@@ -80,4 +82,5 @@ Xem `docs/API.md`, mục B6.
 - “Xem gần đây” lưu tối đa 12 movie ID trong `vietarr_recent_movies`; không có playback percentage.
 - Production hiện chạy Core `sha-2b76ec7` và Web `sha-0d88186`; bản vá chỉ recreate Web, không khởi động lại Core hay ứng dụng media nào khác.
 - Bản vá follow-up giữ ảnh Khám phá trong containing block và giới hạn Hero theo viewport; kiểm tra desktop/mobile trên production bằng trình duyệt thật PASS.
+- ADR-008 tách `/movies` khỏi Home và giữ `/series` trung thực với Sonarr; file TV tải rời cần được import vào Sonarr để xuất hiện.
 - QA local và production smoke hoàn tất; Block giữ ACTIVE đến câu `APPROVED BLOCK 06`.

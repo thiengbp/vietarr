@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const links = [
   { id: "home", label: "Trang chủ", href: "/" },
+  { id: "movies", label: "Phim lẻ", href: "/movies" },
   { id: "series", label: "Phim bộ", href: "/series" },
   { id: "discover", label: "Khám phá", href: "/discover" },
   { id: "admin", label: "Admin", href: "/admin" }
