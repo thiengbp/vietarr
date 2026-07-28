@@ -70,6 +70,7 @@ Xem `docs/API.md`, mục B6.
 - [x] Sonarr diagnostic PASS — API/root folder healthy nhưng thư viện thực tế có 0 series; UI không giả dữ liệu và hướng người dùng sang Khám phá.
 - [x] Navigation production smoke PASS — Web `sha-6402324`; `/movies` trả 5 phim/5 poster, điều hướng đủ năm mục, `/series` hiển thị đúng Sonarr 0 bộ và CTA Khám phá.
 - [x] Country filter browser regression PASS — lọc thư viện/Khám phá, phim hợp tác đa nhóm, `aria-pressed`, hit target mobile 44px và không tràn ngang tại 375px.
+- [x] Country filter production smoke PASS — Core/Web `sha-69aa630`; Phim lẻ `Âu Mỹ 5`, Phim bộ `Trung Quốc 1`, Khám phá `Hàn Quốc 1 · Thái Lan 1 · Âu Mỹ 18`; lọc Hàn Quốc trả đúng `1 / 20` và mobile 375px không tràn ngang.
 
 ## 7. Release
 
@@ -84,7 +85,7 @@ Xem `docs/API.md`, mục B6.
 - Core có hai endpoint JWT mới tại `/api/v1/home/discover` và `/api/v1/home/genres`; TMDB key không đi qua Web.
 - Trang `/` dùng server data B2 cho hero/activity/library và client data B6 cho discovery, nên TMDB lỗi không làm mất thư viện.
 - “Xem gần đây” lưu tối đa 12 movie ID trong `vietarr_recent_movies`; không có playback percentage.
-- Production hiện chạy Core `sha-2b76ec7` và Web `sha-6402324`; các bản vá chỉ recreate Web, không khởi động lại Core hay ứng dụng media nào khác.
+- Production hiện chạy Core/Web `sha-69aa630`; lần triển khai ADR-009 chỉ recreate hai dịch vụ VietArr, không khởi động lại ứng dụng media nào khác.
 - Bản vá follow-up giữ ảnh Khám phá trong containing block và giới hạn Hero theo viewport; kiểm tra desktop/mobile trên production bằng trình duyệt thật PASS.
 - ADR-008 tách `/movies` khỏi Home và giữ `/series` trung thực với Sonarr; file TV tải rời cần được import vào Sonarr để xuất hiện.
 - ADR-009 thêm bộ lọc quốc gia cục bộ; metadata thiếu mã quốc gia dùng ngôn ngữ gốc làm fallback và không gọi thêm API theo từng poster.
