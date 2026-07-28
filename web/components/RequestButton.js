@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/clientApi";
 
-export function RequestButton({ item, state, onChooseSource, qualityProfiles = null }) {
+export function RequestButton({ item, state, onChooseSource, qualityProfiles = null, buttonLabel = "Tải" }) {
   const [profiles, setProfiles] = useState(qualityProfiles || []);
   const [profileId, setProfileId] = useState("");
   const [error, setError] = useState("");
@@ -62,6 +62,7 @@ export function RequestButton({ item, state, onChooseSource, qualityProfiles = n
         <div className="flex gap-2">
           {!isSeries ? (
             <select
+              aria-label={`Chất lượng tải cho ${item.title}`}
               className="min-w-0 flex-1 rounded-md border border-subtle bg-overlay px-2 py-2 text-xs text-primary"
               value={profileId}
               onChange={(event) => setProfileId(event.target.value)}
@@ -80,7 +81,7 @@ export function RequestButton({ item, state, onChooseSource, qualityProfiles = n
             disabled={!isSeries && !profileId}
             onClick={() => onChooseSource?.(item, isSeries ? null : Number(profileId))}
           >
-            {isSeries ? "Tìm nguồn" : "Tải"}
+            {isSeries ? "Tìm nguồn" : buttonLabel}
           </button>
         </div>
       ) : null}

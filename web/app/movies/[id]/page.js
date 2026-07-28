@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MovieDownloadAction } from "@/components/MovieDownloadAction";
 import { PlayMenu } from "@/components/PlayMenu";
 import { QualityBadge } from "@/components/QualityBadge";
 import { RecentMovieTracker } from "@/components/RecentlyViewed";
@@ -48,7 +49,7 @@ export default async function MovieDetailPage({ params }) {
             </div>
             {movie.overview ? <p className="mt-5 max-w-2xl text-base leading-7 text-secondary">{movie.overview}</p> : null}
             <div className="mt-6">
-              <PlayMenu options={options} />
+              {movie.status === "available" ? <PlayMenu options={options} /> : <MovieDownloadAction movie={movie} />}
             </div>
           </div>
         </div>

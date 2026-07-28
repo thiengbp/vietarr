@@ -65,6 +65,8 @@ Ghi chú: accent **cam hổ phách** thay vì đỏ Netflix — tránh cảm gi�
 | `RecentlyViewed` | lịch sử mở phim cục bộ, không giả tiến độ phát | P6 |
 | `CountryFilter` | chip Tất cả/Việt Nam/Trung Quốc/Hàn Quốc/Nhật Bản/Thái Lan/Âu Mỹ/Khác, chỉ hiện nhóm có kết quả | P6 |
 
+`RequestButton` cũng là hành động chính trên trang chi tiết khi phim chưa có file: chọn quality profile → mở `ReleasePicker` → gửi release sang Radarr. Phim đã có file chỉ hiện hành động xem, không hiện tải trùng.
+
 ### 3.2. Bộ lọc quốc gia
 - Là bộ lọc phụ trong Phim lẻ, Phim bộ và Khám phá; không thêm vào navigation chính hoặc Trang chủ.
 - Chip có hit target tối thiểu 44px, `aria-pressed`, số lượng kết quả và cuộn ngang trên mobile.

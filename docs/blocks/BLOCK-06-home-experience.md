@@ -52,6 +52,7 @@ Xem `docs/API.md`, mục B6.
 - [x] Xây hero, recent/activity/discovery/library surfaces.
 - [x] Tách Home và thư viện phim lẻ theo ADR-008; thêm `/movies` và điều hướng năm mục.
 - [x] Chuẩn hóa `countryGroups` và bộ lọc quốc gia theo ADR-009.
+- [x] Nối trang chi tiết phim chưa có file vào luồng chọn nguồn tải B5 hiện có.
 - [x] Chuẩn hóa tokens, responsive và accessibility.
 - [x] Chạy QA và cập nhật handoff.
 
@@ -71,6 +72,7 @@ Xem `docs/API.md`, mục B6.
 - [x] Navigation production smoke PASS — Web `sha-6402324`; `/movies` trả 5 phim/5 poster, điều hướng đủ năm mục, `/series` hiển thị đúng Sonarr 0 bộ và CTA Khám phá.
 - [x] Country filter browser regression PASS — lọc thư viện/Khám phá, phim hợp tác đa nhóm, `aria-pressed`, hit target mobile 44px và không tràn ngang tại 375px.
 - [x] Country filter production smoke PASS — Core/Web `sha-69aa630`; Phim lẻ `Âu Mỹ 5`, Phim bộ `Trung Quốc 1`, Khám phá `Hàn Quốc 1 · Thái Lan 1 · Âu Mỹ 18`; lọc Hàn Quốc trả đúng `1 / 20` và mobile 375px không tràn ngang.
+- [x] Movie detail download regression PASS — phim thiếu file hiện CTA tải, mở nguồn Bitmagnet, gửi release và cập nhật `37% · Đang tải`; phim sẵn sàng chỉ hiện PlayMenu; mobile 375px không tràn ngang và control cao 44px.
 
 ## 7. Release
 
@@ -89,4 +91,5 @@ Xem `docs/API.md`, mục B6.
 - Bản vá follow-up giữ ảnh Khám phá trong containing block và giới hạn Hero theo viewport; kiểm tra desktop/mobile trên production bằng trình duyệt thật PASS.
 - ADR-008 tách `/movies` khỏi Home và giữ `/series` trung thực với Sonarr; file TV tải rời cần được import vào Sonarr để xuất hiện.
 - ADR-009 thêm bộ lọc quốc gia cục bộ; metadata thiếu mã quốc gia dùng ngôn ngữ gốc làm fallback và không gọi thêm API theo từng poster.
+- Trang chi tiết phim thiếu file tái sử dụng `RequestButton` và `ReleasePicker`; không thêm endpoint hoặc cơ chế tải thứ hai.
 - QA local và production smoke hoàn tất; Block giữ ACTIVE đến câu `APPROVED BLOCK 06`.
