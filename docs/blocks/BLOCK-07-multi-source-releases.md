@@ -82,7 +82,7 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 - [x] Installer test: custom definition được cài/cập nhật idempotent và không ghi đè file do người dùng quản lý.
 - [ ] BT4G production capability check PASS trước khi bật; challenge/CAPTCHA phải để nguồn ở `unavailable`.
 - [ ] BTDig chỉ bật khi adapter không cần CAPTCHA; nếu chưa đạt, UI hiển thị unavailable có lý do.
-- [ ] Core test, Web lint/build và browser smoke desktop/mobile PASS.
+- [x] Core test, Web lint/build và browser smoke desktop/mobile PASS.
 - [x] Không gửi request tải thật trong smoke test nếu chưa có thao tác phê duyệt riêng.
 
 ## 7. Release
@@ -100,3 +100,4 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 - Bitmagnet đã là DHT crawler/search engine nội bộ và không cần thay thế để có kiến trúc multi-source.
 - Tình trạng kiểm tra 2026-07-29: BT4G trả Cloudflare challenge; BTDig trả Google reCAPTCHA; cả hai mặc định chưa enable.
 - Capability check từ VM production ngày 2026-07-29 chưa chạy được vì SSH tới `10.10.10.50:22` timeout; không suy diễn PASS và không bật nguồn.
+- Local browser smoke PASS với response B7 giả lập: trạng thái `ok/unavailable`, cảnh báo partial và nguồn gộp hiển thị đúng; viewport 375×812 không tràn ngang, nút cao 44px, ESC đóng modal và trả focus về nút mở.
