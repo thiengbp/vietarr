@@ -204,5 +204,59 @@ Quy ước B6:
 - Trang chủ chỉ chọn hero từ `MediaSummary.status='available'`; nội dung thiếu file không được trình bày như có thể xem.
 - “Xem gần đây” là lịch sử mở trang chi tiết lưu cục bộ trên thiết bị. B6 chưa có playback progress và không dùng nhãn “Xem tiếp”.
 
+## B7 — Multi-source release search (DRAFT; Block 07 chưa ACTIVE)
+
+B7 giữ nguyên endpoint B5 và chỉ mở rộng response theo hướng additive. Phần này chưa có hiệu lực production cho đến khi Block 07 qua phase gate.
+
+`GET /discover/:tmdbId/releases?type=movie|series` dự kiến trả:
+
+```json
+{
+  "source": "Prowlarr",
+  "partial": true,
+  "providers": [
+    {
+      "id": "prowlarr",
+      "label": "Prowlarr / Bitmagnet",
+      "status": "ok",
+      "count": 12,
+      "latencyMs": 483
+    },
+    {
+      "id": "bt4g",
+      "label": "BT4G",
+      "status": "unavailable",
+      "count": 0,
+      "latencyMs": 12000,
+      "message": "Capability check failed"
+    }
+  ],
+  "results": [
+    {
+      "id": "opaque-stable-id",
+      "title": "Movie.Title.2026.2160p.WEB-DL",
+      "source": "Bitmagnet",
+      "sources": ["Bitmagnet"],
+      "quality": "2160p",
+      "sizeBytes": 1234567890,
+      "seeders": 12,
+      "leechers": 3,
+      "publishDate": "2026-07-27T10:00:00.000Z",
+      "infoHash": "0123456789abcdef...",
+      "magnetUrl": "magnet:?xt=urn:btih:..."
+    }
+  ]
+}
+```
+
+Quy ước draft B7:
+
+- `source` và `ReleaseOption.source` được giữ lại để client B5 cũ không hỏng; `partial`, `providers` và `sources` là field mới.
+- `ProviderStatus.status`: `ok | degraded | unavailable`.
+- `partial=true` khi ít nhất một provider được cấu hình không trả kết quả thành công trong request hiện tại.
+- Core khử trùng lặp theo info hash chuẩn hóa và gộp nhãn vào `sources`.
+- `message` là thông báo an toàn cho người dùng; không chứa URL nội bộ, API key, cookie hoặc chi tiết proxy.
+- Nguồn website chỉ được bật sau capability check không cần thao tác người dùng hoặc CAPTCHA; không có hành vi bypass CAPTCHA.
+
 ## Quy ước lỗi
 JSON `{error: {code, message}}`; 400 input, 401/403 auth, 404, 502 khi app *arr downstream lỗi (kèm `upstream`).
