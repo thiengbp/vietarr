@@ -8,6 +8,7 @@
 | GET | `/library/movies` | [{id, tmdbId, title, year, posterUrl, quality, status, sizeBytes, path, smbPath}] |
 | GET | `/library/series` | tương tự + seasons summary |
 | GET | `/library/movies/:id` | chi tiết + files + subtitle status (Bazarr) |
+| GET | `/library/series/:id` | chi tiết bộ phim + danh sách tập và play options của tập đã có file |
 | GET | `/play/:mediaId/options` | {infuseUrl, vlcUrl, smbPath, httpStreamUrl?, browserPlayable:boolean} |
 | GET | `/stream/:fileId` | HTTP 206 Range stream (không transcode) |
 | GET | `/health` | {status, radarr, sonarr, bazarr, qbit: up/down} |
@@ -36,6 +37,7 @@
 
 `MovieDetail = MediaSummary + { overview, runtimeMinutes, files, subtitleStatus }`.
 `SeriesSummary = MediaSummary + { seasons: [{seasonNumber, episodeCount, availableCount}] }`.
+`SeriesDetail = SeriesSummary + { overview, network, runtimeMinutes, episodeCount, availableCount, episodes: [{id, seasonNumber, episodeNumber, title, airDate, status, quality, sizeBytes, playOptions?}] }`.
 
 `PlayOptions`
 ```json
@@ -51,7 +53,7 @@
 Quy ước B2:
 - `id` là ID nội bộ ổn định dạng `<source>-<arrId>`; Block 2 không tạo media/request mới.
 - `status`: `available | missing | queued | downloading | unknown`.
-- `GET /play/:mediaId/options` chỉ trả URL phát/SMB khi Radarr có `movieFile.path`; phim chưa có file trả các URL bằng `null` để UI không mở deep link không hợp lệ.
+- `GET /play/:mediaId/options` hỗ trợ `movie-<radarrId>` và `episode-<sonarrEpisodeId>`, chỉ trả URL phát/SMB khi *arr có file path thật; nội dung chưa có file trả các URL bằng `null` để UI không mở deep link không hợp lệ.
 - Deep link Infuse/VLC chỉ dùng trên thiết bị di động có cài ứng dụng tương ứng. Desktop dùng HTTP stream (nếu trình duyệt phát được) hoặc copy HTTP/SMB URL.
 - Khi Radarr/Sonarr/Bazarr down, Core trả cache nếu có và thêm header `X-Vietarr-Cache: stale`; nếu chưa có cache thì trả `502` theo quy ước lỗi.
 - API key *arr không bao giờ xuất hiện trong response. Web chỉ gọi Core.

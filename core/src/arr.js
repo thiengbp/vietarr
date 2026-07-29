@@ -51,6 +51,21 @@ export function createArrClient({ cache, config }) {
       const url = `${config.sonarr.baseUrl}/api/v3/series`;
       return cachedJson({ key: "sonarr:series", upstream: "sonarr", url, apiKey: config.sonarr.apiKey });
     },
+    seriesById(id) {
+      const arrId = String(id).replace(/^series-/, "");
+      const url = `${config.sonarr.baseUrl}/api/v3/series/${encodeURIComponent(arrId)}`;
+      return cachedJson({ key: `sonarr:series:${arrId}`, upstream: "sonarr", url, apiKey: config.sonarr.apiKey });
+    },
+    episodes(seriesId) {
+      const arrId = String(seriesId).replace(/^series-/, "");
+      const url = `${config.sonarr.baseUrl}/api/v3/episode?seriesId=${encodeURIComponent(arrId)}&includeEpisodeFile=true`;
+      return cachedJson({ key: `sonarr:episodes:${arrId}`, upstream: "sonarr", url, apiKey: config.sonarr.apiKey });
+    },
+    episode(id) {
+      const arrId = String(id).replace(/^episode-/, "");
+      const url = `${config.sonarr.baseUrl}/api/v3/episode/${encodeURIComponent(arrId)}?includeEpisodeFile=true`;
+      return cachedJson({ key: `sonarr:episode:${arrId}`, upstream: "sonarr", url, apiKey: config.sonarr.apiKey });
+    },
     bazarrMovies() {
       const url = `${config.bazarr.baseUrl}/api/movies?start=0&length=10000`;
       return cachedJson({ key: "bazarr:movies", upstream: "bazarr", url, apiKey: config.bazarr.apiKey, allowStale: true });

@@ -126,6 +126,40 @@ export function movieDetail(movie, config) {
   };
 }
 
+export function episodePlayOptions(episode, config) {
+  return playOptionsForFile(episode?.episodeFile || null, `episode-${episode?.id}`, config);
+}
+
+export function seriesDetail(series, episodes, config) {
+  const summary = mapSeries(series, config);
+  const mappedEpisodes = (Array.isArray(episodes) ? episodes : [])
+    .map((episode) => {
+      const file = episode.episodeFile || null;
+      const hasFile = Boolean(episode.hasFile && file?.path);
+      return {
+        id: `episode-${episode.id}`,
+        seasonNumber: episode.seasonNumber ?? 0,
+        episodeNumber: episode.episodeNumber ?? 0,
+        title: episode.title || `Tập ${episode.episodeNumber || "—"}`,
+        airDate: episode.airDate || null,
+        status: hasFile ? "available" : "missing",
+        quality: qualityName(file),
+        sizeBytes: file?.size || 0,
+        playOptions: hasFile ? episodePlayOptions(episode, config) : null
+      };
+    })
+    .sort((left, right) => left.seasonNumber - right.seasonNumber || left.episodeNumber - right.episodeNumber);
+  return {
+    ...summary,
+    overview: series.overview || "",
+    network: series.network || null,
+    runtimeMinutes: series.runtime || null,
+    episodeCount: mappedEpisodes.length,
+    availableCount: mappedEpisodes.filter((episode) => episode.status === "available").length,
+    episodes: mappedEpisodes
+  };
+}
+
 export function mergeMovieSubtitles(movies, bazarrPayload) {
   const rows = Array.isArray(bazarrPayload) ? bazarrPayload : bazarrPayload?.data || bazarrPayload?.movies || [];
   if (!Array.isArray(rows) || rows.length === 0) return movies;
@@ -157,8 +191,7 @@ export function subtitleStatus(movie) {
   return { vietnamese: "unknown" };
 }
 
-export function playOptions(media, config) {
-  const file = media.movieFile || null;
+function playOptionsForFile(file, mediaId, config) {
   const filePath = file?.path || null;
   if (!filePath) {
     return {
@@ -170,7 +203,7 @@ export function playOptions(media, config) {
     };
   }
   const smbPath = toSmbPath(filePath, config);
-  const streamUrl = `${config.publicBaseUrl.replace(/\/$/, "")}/api/v1/stream/movie-${media.id}`;
+  const streamUrl = `${config.publicBaseUrl.replace(/\/$/, "")}/api/v1/stream/${mediaId}`;
   const browserPlayable = isBrowserPlayable(file);
   const encodedStream = encodeURIComponent(streamUrl);
   return {
@@ -182,8 +215,12 @@ export function playOptions(media, config) {
   };
 }
 
-export function streamMovieFile(movie, config, rangeHeader) {
-  const filePath = toHostPath(movie.movieFile?.path, config);
+export function playOptions(media, config) {
+  return playOptionsForFile(media.movieFile || null, `movie-${media.id}`, config);
+}
+
+function streamFile(file, config, rangeHeader) {
+  const filePath = toHostPath(file?.path, config);
   if (!filePath || !existsSync(filePath)) {
     const err = new Error("File not found");
     err.status = 404;
@@ -231,4 +268,12 @@ export function streamMovieFile(movie, config, rangeHeader) {
     },
     stream: createReadStream(filePath, { start, end })
   };
+}
+
+export function streamMovieFile(movie, config, rangeHeader) {
+  return streamFile(movie.movieFile, config, rangeHeader);
+}
+
+export function streamEpisodeFile(episode, config, rangeHeader) {
+  return streamFile(episode.episodeFile, config, rangeHeader);
 }

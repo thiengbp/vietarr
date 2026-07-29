@@ -19,6 +19,10 @@ export async function getSeries() {
   return getJson("/library/series");
 }
 
+export async function getSeriesDetail(id) {
+  return getJson(`/library/series/${encodeURIComponent(id)}`);
+}
+
 export async function getMovie(id) {
   return getJson(`/library/movies/${encodeURIComponent(id)}`);
 }

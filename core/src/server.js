@@ -3,7 +3,17 @@ import express from "express";
 import { createCache } from "./cache.js";
 import { loadConfig } from "./config.js";
 import { createArrClient, UpstreamError } from "./arr.js";
-import { mapMovie, mapSeries, mergeMovieSubtitles, movieDetail, playOptions, streamMovieFile } from "./media.js";
+import {
+  episodePlayOptions,
+  mapMovie,
+  mapSeries,
+  mergeMovieSubtitles,
+  movieDetail,
+  playOptions,
+  seriesDetail,
+  streamEpisodeFile,
+  streamMovieFile
+} from "./media.js";
 import { createAuthService } from "./auth.mjs";
 import { createAppDb } from "./db.mjs";
 import { createDiscoverService } from "./discover.mjs";
@@ -231,6 +241,22 @@ export function createServer(options = {}) {
     }
   });
 
+  app.get("/api/v1/library/series/:id", async (req, res, next) => {
+    try {
+      const [seriesResult, episodesResult] = await Promise.all([
+        arr.seriesById(req.params.id),
+        arr.episodes(req.params.id)
+      ]);
+      if (seriesResult.stale || episodesResult.stale) res.set("X-Vietarr-Cache", "stale");
+      res.json({
+        ...seriesDetail(seriesResult.data, episodesResult.data, config),
+        warning: seriesResult.warning || episodesResult.warning || null
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/v1/library/movies/:id", async (req, res, next) => {
     try {
       const result = await arr.movie(req.params.id);
@@ -252,11 +278,15 @@ export function createServer(options = {}) {
 
   app.get("/api/v1/play/:mediaId/options", async (req, res, next) => {
     try {
-      if (!req.params.mediaId.startsWith("movie-")) {
-        return res.status(404).json({ error: { code: "not_found", message: "Media not found" } });
+      if (req.params.mediaId.startsWith("movie-")) {
+        const result = await arr.movie(req.params.mediaId);
+        return res.json(playOptions(result.data, config));
       }
-      const result = await arr.movie(req.params.mediaId);
-      res.json(playOptions(result.data, config));
+      if (req.params.mediaId.startsWith("episode-")) {
+        const result = await arr.episode(req.params.mediaId);
+        return res.json(episodePlayOptions(result.data, config));
+      }
+      return res.status(404).json({ error: { code: "not_found", message: "Media not found" } });
     } catch (error) {
       next(error);
     }
@@ -264,11 +294,16 @@ export function createServer(options = {}) {
 
   app.get("/api/v1/stream/:fileId", async (req, res, next) => {
     try {
-      if (!req.params.fileId.startsWith("movie-")) {
+      let streamResult;
+      if (req.params.fileId.startsWith("movie-")) {
+        const result = await arr.movie(req.params.fileId);
+        streamResult = streamMovieFile(result.data, config, req.headers.range);
+      } else if (req.params.fileId.startsWith("episode-")) {
+        const result = await arr.episode(req.params.fileId);
+        streamResult = streamEpisodeFile(result.data, config, req.headers.range);
+      } else {
         return res.status(404).json({ error: { code: "not_found", message: "File not found" } });
       }
-      const result = await arr.movie(req.params.fileId);
-      const streamResult = streamMovieFile(result.data, config, req.headers.range);
       res.status(streamResult.status).set(streamResult.headers);
       streamResult.stream.pipe(res);
     } catch (error) {

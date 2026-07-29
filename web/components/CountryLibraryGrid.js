@@ -16,7 +16,7 @@ export function CountryLibraryGrid({ items, type }) {
           <PosterCard
             key={item.id}
             item={item}
-            href={type === "movie" ? `/movies/${item.id}` : "/series"}
+            href={type === "movie" ? `/movies/${item.id}` : `/series/${item.id}`}
           />
         ))}
       </div>
