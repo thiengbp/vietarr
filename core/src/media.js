@@ -83,9 +83,11 @@ export function mapMovie(movie, config) {
 export function mapSeries(series, config) {
   const seasons = (series.seasons || []).map((season) => ({
     seasonNumber: season.seasonNumber,
-    episodeCount: season.statistics?.episodeCount || 0,
+    episodeCount: season.statistics?.totalEpisodeCount || season.statistics?.episodeCount || 0,
     availableCount: season.statistics?.episodeFileCount || 0
   }));
+  const episodeCount = seasons.reduce((total, season) => total + season.episodeCount, 0);
+  const availableCount = seasons.reduce((total, season) => total + season.availableCount, 0);
   return {
     id: `series-${series.id}`,
     source: "sonarr",
@@ -98,8 +100,8 @@ export function mapSeries(series, config) {
     }),
     posterUrl: imageUrl(series.images, ["poster", "cover"]),
     backdropUrl: imageUrl(series.images, ["fanart", "background", "banner"]),
-    quality: series.qualityProfileId ? `Profile ${series.qualityProfileId}` : null,
-    status: seasons.some((season) => season.availableCount > 0) ? "available" : "missing",
+    quality: episodeCount > 0 ? `${availableCount}/${episodeCount} tập` : null,
+    status: availableCount > 0 ? "available" : "missing",
     sizeBytes: series.statistics?.sizeOnDisk || 0,
     path: series.path || null,
     smbPath: toSmbPath(series.path, config),

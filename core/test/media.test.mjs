@@ -66,6 +66,7 @@ test("series detail exposes real Sonarr episodes and play options only for impor
   ];
 
   const detail = seriesDetail(series, episodes, config);
+  assert.equal(detail.quality, "1/2 tập");
   assert.equal(detail.episodeCount, 2);
   assert.equal(detail.availableCount, 1);
   assert.equal(detail.episodes[0].status, "missing");
