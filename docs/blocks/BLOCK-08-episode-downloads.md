@@ -63,7 +63,7 @@ Contract: `docs/API.md`, mục B8. Contract được đóng băng khi Block 08 c
 - [x] Migrate request log cho `media_type=episode` + `episode_id`.
 - [x] Thêm Core episode request/progress và unit test.
 - [x] Thêm EpisodeDownloadButton và trạng thái accessible.
-- [ ] Chạy QA, production smoke và cập nhật handoff.
+- [x] Chạy QA, production smoke và cập nhật handoff.
 
 ## 6. QA / Definition of Done
 
@@ -74,7 +74,7 @@ Contract: `docs/API.md`, mục B8. Contract được đóng băng khi Block 08 c
 - [x] Sonarr thiếu indexer/download client trả lỗi cấu hình cụ thể.
 - [x] Core test, Web lint/build PASS.
 - [ ] Desktop/mobile không tràn ngang; nút ≥44px; trạng thái được screen reader thông báo.
-- [ ] Production smoke không gửi request tải thật nếu chưa chọn một episode thử nghiệm cụ thể.
+- [x] Production smoke không gửi request tải thật nếu chưa chọn một episode thử nghiệm cụ thể.
 
 ## 7. Release
 
@@ -88,3 +88,6 @@ Contract: `docs/API.md`, mục B8. Contract được đóng băng khi Block 08 c
 
 - Production hiện có The Eternal Fragrance: 33 episode, file thật chỉ E31–E33; E01–E30 là tập thử nghiệm phù hợp cho UI nhưng production smoke không tự bấm tải.
 - Sonarr production binary và source upstream đều xác nhận command `EpisodeSearch` nhận `EpisodeIds`.
+- Production đã chạy Core/Web `sha-73f34bb`; SQLite xác nhận `media_type=episode` và cột `episode_id`.
+- Đã tạo bản sao nhất quán `core.sqlite.backup-block08-73f34bb` trước migration; smoke HTML render đủ 30 nút `Tải tập này` và không gửi command sang Sonarr.
+- Browser visual smoke dừng tại màn hình đăng nhập (không dùng hoặc thay đổi tài khoản người dùng); responsive grid, hit target 44px, focus ring và `aria-live` đã qua lint/build và kiểm tra mã.
