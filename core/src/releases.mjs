@@ -15,8 +15,8 @@ function normalizeInfoHash(value) {
   return "";
 }
 
-function releaseId(indexerId, guid) {
-  return crypto.createHash("sha256").update(`${indexerId || 0}\0${guid || ""}`).digest("base64url");
+function releaseId(infoHash) {
+  return crypto.createHash("sha256").update(`release\0${infoHash}`).digest("base64url");
 }
 
 function qualityFromTitle(title) {
@@ -64,16 +64,22 @@ function magnetUrl({ infoHash, title, sizeBytes }) {
   return `magnet:?${params.join("&")}`;
 }
 
-function mapRelease(row) {
+function normalizeRelease(row, fallbackSource = "Prowlarr") {
   const infoHash = normalizeInfoHash(row.infoHash || row.guid);
   if (!infoHash || String(row.protocol || "torrent").toLowerCase() !== "torrent") return null;
-  const sizeBytes = cleanNumber(row.size);
+  const sizeBytes = cleanNumber(row.sizeBytes ?? row.size);
   const title = String(row.title || "Không rõ release");
+  const source = String(row.source || row.indexer || fallbackSource);
+  const sources = [...new Set([
+    ...(Array.isArray(row.sources) ? row.sources : []),
+    source
+  ].map((value) => String(value || "").trim()).filter(Boolean))];
   return {
-    id: releaseId(row.indexerId, row.guid),
+    id: releaseId(infoHash),
     title,
-    source: String(row.indexer || "Prowlarr"),
-    quality: qualityFromTitle(title),
+    source,
+    sources,
+    quality: row.quality || qualityFromTitle(title),
     sizeBytes,
     seeders: cleanNumber(row.seeders),
     leechers: cleanNumber(row.leechers),
@@ -81,6 +87,33 @@ function mapRelease(row) {
     infoHash,
     magnetUrl: magnetUrl({ infoHash, title, sizeBytes })
   };
+}
+
+function mergeNumber(left, right) {
+  if (left == null) return right;
+  if (right == null) return left;
+  return Math.max(left, right);
+}
+
+function dedupeReleases(releases) {
+  const byHash = new Map();
+  for (const release of releases) {
+    const existing = byHash.get(release.infoHash);
+    if (!existing) {
+      byHash.set(release.infoHash, release);
+      continue;
+    }
+    const sources = [...new Set([...existing.sources, ...release.sources])];
+    byHash.set(release.infoHash, {
+      ...existing,
+      sources,
+      seeders: mergeNumber(existing.seeders, release.seeders),
+      leechers: mergeNumber(existing.leechers, release.leechers),
+      sizeBytes: mergeNumber(existing.sizeBytes, release.sizeBytes),
+      publishDate: [existing.publishDate, release.publishDate].filter(Boolean).sort().at(-1) || null
+    });
+  }
+  return [...byHash.values()];
 }
 
 async function searchProwlarr({ config, query, type = "movie", fetchImpl }) {
@@ -108,7 +141,77 @@ async function searchProwlarr({ config, query, type = "movie", fetchImpl }) {
   return Array.isArray(rows) ? rows : [];
 }
 
-export function createReleaseService({ config, discover, fetchImpl = fetch }) {
+export function createProwlarrProvider({ config, fetchImpl = fetch }) {
+  return {
+    id: "prowlarr",
+    label: "Prowlarr",
+    timeoutMs: 35_000,
+    configured: Boolean(config.prowlarr?.baseUrl && config.prowlarr?.apiKey),
+    async search({ query, type }) {
+      const rows = await searchProwlarr({ config, query, type, fetchImpl });
+      return rows.map((row) => normalizeRelease(row, "Prowlarr")).filter(Boolean);
+    }
+  };
+}
+
+async function runProviderSearch(provider, task) {
+  const timeoutMs = Number.isFinite(provider.timeoutMs) && provider.timeoutMs > 0 ? provider.timeoutMs : 12_000;
+  let timeoutId;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(task),
+      new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error("provider_timeout")), timeoutMs);
+      })
+    ]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function searchProvider({ provider, queries, type, media }) {
+  const startedAt = Date.now();
+  try {
+    const releases = await runProviderSearch(provider, async () => {
+      let matches = [];
+      for (const query of queries) {
+        const candidates = await provider.search({ query, type });
+        matches = (Array.isArray(candidates) ? candidates : [])
+          .map((row) => normalizeRelease(row, provider.label))
+          .filter(Boolean)
+          .filter((release) => matchesMedia(release.title, media));
+        if (matches.length > 0) break;
+      }
+      return matches;
+    });
+    return {
+      status: {
+        id: provider.id,
+        label: provider.label,
+        status: "ok",
+        count: releases.length,
+        latencyMs: Date.now() - startedAt
+      },
+      releases
+    };
+  } catch (_error) {
+    return {
+      status: {
+        id: provider.id,
+        label: provider.label,
+        status: "unavailable",
+        count: 0,
+        latencyMs: Date.now() - startedAt,
+        message: `${provider.label} hiện không phản hồi`
+      },
+      releases: []
+    };
+  }
+}
+
+export function createReleaseService({ config, discover, fetchImpl = fetch, providers, logger = null }) {
+  const releaseProviders = providers || [createProwlarrProvider({ config, fetchImpl })];
+
   async function searchMediaReleases({ tmdbId, type = "movie" }) {
     const id = Number(tmdbId);
     if (!Number.isInteger(id) || id <= 0) {
@@ -139,21 +242,38 @@ export function createReleaseService({ config, discover, fetchImpl = fetch }) {
       englishMedia?.name
     ].map((value) => String(value || "").trim()).filter(Boolean))];
     const mediaWithAliases = { ...media, searchTitles: queries };
-    let results = [];
-    for (const query of queries) {
-      const rows = await searchProwlarr({ config, query, type, fetchImpl });
-      results = rows
-        .filter((row) => matchesMedia(row.title, mediaWithAliases))
-        .map(mapRelease)
-        .filter(Boolean);
-      if (results.length > 0) break;
+    const activeProviders = releaseProviders.filter((provider) => provider?.configured !== false && typeof provider?.search === "function");
+    if (activeProviders.length === 0) {
+      throw releaseError(503, "download_source_unavailable", "Chưa cấu hình nguồn tải cho VietArr Core");
     }
 
-    results = results
+    const providerResults = await Promise.all(activeProviders.map((provider) => searchProvider({
+      provider,
+      queries,
+      type,
+      media: mediaWithAliases
+    })));
+
+    const results = dedupeReleases(providerResults.flatMap((result) => result.releases))
       .sort((left, right) => (right.seeders ?? -1) - (left.seeders ?? -1) || (right.publishDate || "").localeCompare(left.publishDate || ""))
       .slice(0, 50);
+    const providerStatuses = providerResults.map((result) => result.status);
+    for (const provider of providerStatuses) {
+      if (provider.status === "ok") continue;
+      logger?.warn?.(JSON.stringify({
+        event: "release_provider_unavailable",
+        providerId: provider.id,
+        status: provider.status,
+        latencyMs: provider.latencyMs
+      }));
+    }
 
-    return { source: "Prowlarr", results };
+    return {
+      source: "Prowlarr",
+      partial: providerStatuses.some((provider) => provider.status !== "ok"),
+      providers: providerStatuses,
+      results
+    };
   }
 
   async function searchMovieReleases({ tmdbId }) {

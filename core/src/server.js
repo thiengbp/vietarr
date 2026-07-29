@@ -21,7 +21,7 @@ export function createServer(options = {}) {
   const arr = createArrClient({ cache, config });
   const auth = options.auth || createAuthService({ db, jwtSecret: config.jwtSecret, publicBaseUrl: config.publicBaseUrl });
   const discover = options.discover || createDiscoverService({ config });
-  const releases = options.releases || createReleaseService({ config, discover });
+  const releases = options.releases || createReleaseService({ config, discover, logger: console });
   const requests = options.requests || createRequestService({ db, config, discover });
   const webhook = options.webhook || createWebhookService({
     hub,

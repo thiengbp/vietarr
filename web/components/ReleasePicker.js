@@ -17,11 +17,25 @@ function peerLabel(release) {
   return `${seeders} seed · ${leechers} peer`;
 }
 
+function providerStatusLabel(status) {
+  if (status === "ok") return "Sẵn sàng";
+  if (status === "degraded") return "Chập chờn";
+  return "Không khả dụng";
+}
+
+function providerStatusTone(status) {
+  if (status === "ok") return "border-success/30 text-success";
+  if (status === "degraded") return "border-accent/30 text-accent";
+  return "border-danger/30 text-danger";
+}
+
 export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) {
   const dialogRef = useRef(null);
   const previousFocusRef = useRef(null);
   const busyRef = useRef("");
   const [releases, setReleases] = useState([]);
+  const [providers, setProviders] = useState([]);
+  const [partial, setPartial] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -33,9 +47,22 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
     let active = true;
     setLoading(true);
     setError("");
+    setReleases([]);
+    setProviders([]);
+    setPartial(false);
     apiFetch(`/discover/${encodeURIComponent(item.tmdbId)}/releases?type=${encodeURIComponent(item.type || "movie")}`)
       .then((data) => {
-        if (active) setReleases(data.results || []);
+        if (!active) return;
+        const results = data.results || [];
+        setReleases(results);
+        setPartial(Boolean(data.partial));
+        setProviders(Array.isArray(data.providers) ? data.providers : [{
+          id: "legacy",
+          label: data.source || "Nguồn tải",
+          status: "ok",
+          count: results.length,
+          latencyMs: 0
+        }]);
       })
       .catch((requestError) => {
         if (active) setError(requestError.message);
@@ -175,9 +202,34 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
         ) : null}
 
         <div className="overflow-y-auto px-4 py-4 sm:px-6">
-          <p className="mb-4 text-xs text-secondary">Kết quả từ Prowlarr/Bitmagnet. Chỉ tải nội dung anh có quyền sử dụng.</p>
-          {loading ? <div className="rounded-xl border border-subtle bg-overlay p-5 text-sm text-secondary">Đang tìm nguồn trên Bitmagnet…</div> : null}
-          {!loading && !releases.length && !error ? <div className="rounded-xl border border-subtle bg-overlay p-5 text-sm text-secondary">Bitmagnet chưa tìm thấy release phù hợp.</div> : null}
+          <p className="mb-3 text-xs text-secondary">Kết quả tổng hợp từ các nguồn đã cấu hình. Chỉ tải nội dung anh có quyền sử dụng.</p>
+
+          {!loading && providers.length ? (
+            <div className="mb-4 flex flex-wrap gap-2" aria-label="Trạng thái nguồn tải">
+              {providers.map((provider) => (
+                <span
+                  key={provider.id}
+                  title={provider.message || undefined}
+                  className={`rounded-full border px-2.5 py-1 text-xs ${providerStatusTone(provider.status)}`}
+                >
+                  {provider.label}: {providerStatusLabel(provider.status)}{provider.status === "ok" ? ` · ${provider.count || 0}` : ""}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {!loading && partial ? (
+            <div role="status" className="mb-4 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent">
+              Một số nguồn đang không khả dụng. Danh sách bên dưới là kết quả một phần.
+            </div>
+          ) : null}
+
+          {loading ? <div className="rounded-xl border border-subtle bg-overlay p-5 text-sm text-secondary">Đang tìm trên các nguồn tải…</div> : null}
+          {!loading && !releases.length && !error ? (
+            <div className="rounded-xl border border-subtle bg-overlay p-5 text-sm text-secondary">
+              {partial ? "Các nguồn còn hoạt động chưa tìm thấy release phù hợp." : "Chưa tìm thấy release phù hợp."}
+            </div>
+          ) : null}
 
           <div className="space-y-3">
             {releases.map((release) => (
@@ -189,7 +241,7 @@ export function ReleasePicker({ item, qualityProfileId, onClose, onRequested }) 
                       <span className="rounded-full border border-subtle px-2 py-1 text-primary">{release.quality}</span>
                       <span className="rounded-full border border-subtle px-2 py-1">{formatBytes(release.sizeBytes)}</span>
                       <span className={`rounded-full border px-2 py-1 ${release.seeders > 0 ? "border-success/30 text-success" : "border-danger/30 text-danger"}`}>{peerLabel(release)}</span>
-                      <span className="rounded-full border border-subtle px-2 py-1">{release.source}</span>
+                      <span className="rounded-full border border-subtle px-2 py-1">{(release.sources || [release.source]).join(" · ")}</span>
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">

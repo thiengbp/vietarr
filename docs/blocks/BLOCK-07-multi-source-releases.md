@@ -63,27 +63,27 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 
 - [x] Đóng Block 06 đúng phase gate và chuyển Block 07 sang ACTIVE.
 - [x] Đóng băng contract B7 trước khi sửa code.
-- [ ] Tạo `ReleaseProvider` + chuyển logic Prowlarr hiện tại sang `ProwlarrProvider`.
-- [ ] Thêm orchestration song song, timeout, trạng thái provider và kết quả một phần.
-- [ ] Thêm normalize/dedupe/ranking theo info hash.
-- [ ] Mở rộng ReleasePicker bằng trạng thái nguồn và cảnh báo partial.
-- [ ] Thêm installer path idempotent cho custom Prowlarr definitions.
+- [x] Tạo `ReleaseProvider` + chuyển logic Prowlarr hiện tại sang `ProwlarrProvider`.
+- [x] Thêm orchestration song song, timeout, trạng thái provider và kết quả một phần.
+- [x] Thêm normalize/dedupe/ranking theo info hash.
+- [x] Mở rộng ReleasePicker bằng trạng thái nguồn và cảnh báo partial.
+- [x] Thêm installer path idempotent cho custom Prowlarr definitions.
 - [ ] Viết BT4G custom-definition PoC và capability check production.
 - [ ] Ghi rõ BTDig unavailable nếu vẫn trả CAPTCHA; không cố bypass.
 - [ ] Chạy QA, security review và cập nhật handoff.
 
 ## 6. QA / Definition of Done
 
-- [ ] Unit test: hai provider trả cùng info hash chỉ còn một release và có đủ `sources`.
-- [ ] Unit test: provider timeout/error vẫn trả kết quả provider khỏe với `partial=true`.
-- [ ] Unit test: kết quả/ranking có tính xác định; dữ liệu thiếu field không làm lỗi response.
-- [ ] Contract test: client B5 cũ vẫn đọc được `source` và `results`.
-- [ ] Security test: response/log không lộ Prowlarr key, cookie, proxy URL hoặc FlareSolverr endpoint.
-- [ ] Installer test: custom definition được cài/cập nhật idempotent và không ghi đè file do người dùng quản lý.
+- [x] Unit test: hai provider trả cùng info hash chỉ còn một release và có đủ `sources`.
+- [x] Unit test: provider timeout/error vẫn trả kết quả provider khỏe với `partial=true`.
+- [x] Unit test: kết quả/ranking có tính xác định; dữ liệu thiếu field không làm lỗi response.
+- [x] Contract test: client B5 cũ vẫn đọc được `source` và `results`.
+- [x] Security test: response/log không lộ Prowlarr key, cookie, proxy URL hoặc FlareSolverr endpoint.
+- [x] Installer test: custom definition được cài/cập nhật idempotent và không ghi đè file do người dùng quản lý.
 - [ ] BT4G production capability check PASS trước khi bật; challenge/CAPTCHA phải để nguồn ở `unavailable`.
 - [ ] BTDig chỉ bật khi adapter không cần CAPTCHA; nếu chưa đạt, UI hiển thị unavailable có lý do.
 - [ ] Core test, Web lint/build và browser smoke desktop/mobile PASS.
-- [ ] Không gửi request tải thật trong smoke test nếu chưa có thao tác phê duyệt riêng.
+- [x] Không gửi request tải thật trong smoke test nếu chưa có thao tác phê duyệt riêng.
 
 ## 7. Release
 
@@ -99,3 +99,4 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 - BT4G/BTDig là search index, không phải tracker; tracker nằm trong magnet/torrent mà chúng trả về.
 - Bitmagnet đã là DHT crawler/search engine nội bộ và không cần thay thế để có kiến trúc multi-source.
 - Tình trạng kiểm tra 2026-07-29: BT4G trả Cloudflare challenge; BTDig trả Google reCAPTCHA; cả hai mặc định chưa enable.
+- Capability check từ VM production ngày 2026-07-29 chưa chạy được vì SSH tới `10.10.10.50:22` timeout; không suy diễn PASS và không bật nguồn.

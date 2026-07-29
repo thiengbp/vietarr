@@ -101,6 +101,12 @@ render_template() {
     "$source" > "$target"
 }
 
+install_custom_definitions() {
+  local source_dir="${VIETARR_CUSTOM_DEFINITIONS_DIR:-$SCRIPT_DIR/definitions}"
+  local target_dir="$VIETARR_HOME/appdata/prowlarr/Definitions/Custom"
+  sh "$SCRIPT_DIR/lib/install-definitions.sh" "$source_dir" "$target_dir"
+}
+
 write_env_once() {
   if [ -f "$VIETARR_HOME/.env" ]; then
     echo "Repair mode: existing $VIETARR_HOME/.env found; keeping it unchanged."
@@ -213,6 +219,7 @@ install_command() {
   render_template "$SCRIPT_DIR/templates/docker-compose.yml.tpl" "$VIETARR_HOME/docker-compose.yml"
   render_template "$SCRIPT_DIR/templates/Caddyfile.tpl" "$VIETARR_HOME/Caddyfile"
   render_template "$SCRIPT_DIR/templates/recyclarr.yml.tpl" "$VIETARR_HOME/appdata/recyclarr/recyclarr.yml"
+  install_custom_definitions
   chown -R 1000:1000 "$VIETARR_HOME" 2>/dev/null || true
   chown -R 1000:1000 "$VIETARR_HOME/appdata/recyclarr" 2>/dev/null || true
 

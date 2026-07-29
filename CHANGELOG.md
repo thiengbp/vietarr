@@ -4,6 +4,13 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 
 ## [Unreleased]
 
+### Added
+- Add provider-based release orchestration with per-provider timeouts, partial-result health, deterministic info-hash deduplication, and credential-safe structured warnings.
+- Add an idempotent installer path for VietArr-managed Prowlarr custom definitions without overwriting user-managed definitions.
+
+### Changed
+- Show release-source health and merged source labels in the source picker while retaining the B5 `source/results` response for older clients.
+
 ## [1.2.0] - 2026-07-29
 
 ### Added
