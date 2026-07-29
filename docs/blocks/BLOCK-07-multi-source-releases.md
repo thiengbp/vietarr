@@ -1,6 +1,6 @@
 # BLOCK-07 — MULTI-SOURCE RELEASE SEARCH
 
-> **Trạng thái:** ACTIVE
+> **Trạng thái:** RELEASED (`v1.3.0`)
 > **Phụ thuộc:** B5, B6 · **Bắt đầu:** 2026-07-29
 
 ## 1. Vision
@@ -87,8 +87,12 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 
 ## 7. Release
 
-- Dự kiến: `v1.3.0` sau khi Jooh gửi `APPROVED BLOCK 07` và toàn bộ DoD PASS.
-- Production đang chạy Core `sha-6e07971` và Web `sha-16d1bde`; Prowlarr đã enable indexer `BTDig` từ managed definition. Block vẫn ACTIVE cho đến approval phrase chính xác.
+`=== BLOCK 07 COMPLETE ===`
+
+- Version: `v1.3.0`
+- Approved by Jooh: 2026-07-29 — “Chấp nhận đề xuất và cho phép triển khai”.
+- Production tại thời điểm release: Core `sha-2982155`, Web `sha-d3e53c3`; Prowlarr enable Bitmagnet + managed BTDig.
+- Evidence: toàn bộ checklist §6 PASS; production capability/smoke ghi tại §9.
 
 ## 8. Technical Debt
 
@@ -104,3 +108,4 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 - BTDig production check: HTTP 200, 20 magnet markers, không có CAPTCHA marker. Prowlarr test PASS; truy vấn “The Eternal Fragrance” trả 10 kết quả có info hash.
 - Core production smoke cho TMDB TV `251600`: provider `Prowlarr` `ok`, `partial=false`, 28 release sau chuẩn hóa; cả 9 release BTDig có magnet hợp lệ và số seed/peer là `null` đúng theo capability nguồn.
 - Local browser smoke PASS với response B7 giả lập: trạng thái `ok/unavailable`, cảnh báo partial và nguồn gộp hiển thị đúng; viewport 375×812 không tràn ngang, nút cao 44px, ESC đóng modal và trả focus về nút mở.
+- Jooh phê duyệt triển khai ngày 2026-07-29; Block 07 được release `v1.3.0`. Block tiếp theo: BLOCK-08 — Episode Downloads.
