@@ -1,6 +1,6 @@
 # BLOCK-06 — HOME EXPERIENCE
 
-> **Trạng thái:** ACTIVE
+> **Trạng thái:** RELEASED `v1.2.0` · **Kết thúc:** 2026-07-29
 > **Phụ thuộc:** B2, B3, B5 · **Bắt đầu:** 2026-07-28
 
 ## 1. Vision
@@ -77,7 +77,11 @@ Xem `docs/API.md`, mục B6.
 
 ## 7. Release
 
-- Dự kiến: `v1.2.0` sau khi Jooh gửi `APPROVED BLOCK 06`.
+`=== BLOCK 06 COMPLETE ===`
+
+- Version: `v1.2.0`
+- Approved by Jooh: 2026-07-29
+- Evidence: toàn bộ checklist §6 PASS; production smoke và handoff ghi tại §9.
 
 ## 8. Technical Debt
 
@@ -94,3 +98,5 @@ Xem `docs/API.md`, mục B6.
 - ADR-009 thêm bộ lọc quốc gia cục bộ; metadata thiếu mã quốc gia dùng ngôn ngữ gốc làm fallback và không gọi thêm API theo từng poster.
 - Trang chi tiết phim thiếu file tái sử dụng `RequestButton` và `ReleasePicker`; không thêm endpoint hoặc cơ chế tải thứ hai.
 - QA local và production smoke hoàn tất; Block giữ ACTIVE đến câu `APPROVED BLOCK 06`.
+- Jooh gửi đúng câu `APPROVED BLOCK 06` ngày 2026-07-29; toàn bộ DoD PASS và Block 06 được release `v1.2.0`.
+- Block tiếp theo: BLOCK-07 — Multi-source Release Search theo ADR-010.

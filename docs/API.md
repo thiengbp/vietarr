@@ -204,9 +204,9 @@ Quy ước B6:
 - Trang chủ chỉ chọn hero từ `MediaSummary.status='available'`; nội dung thiếu file không được trình bày như có thể xem.
 - “Xem gần đây” là lịch sử mở trang chi tiết lưu cục bộ trên thiết bị. B6 chưa có playback progress và không dùng nhãn “Xem tiếp”.
 
-## B7 — Multi-source release search (DRAFT; Block 07 chưa ACTIVE)
+## B7 — Multi-source release search
 
-B7 giữ nguyên endpoint B5 và chỉ mở rộng response theo hướng additive. Phần này chưa có hiệu lực production cho đến khi Block 07 qua phase gate.
+B7 giữ nguyên endpoint B5 và chỉ mở rộng response theo hướng additive.
 
 `GET /discover/:tmdbId/releases?type=movie|series` dự kiến trả:
 
@@ -249,7 +249,7 @@ B7 giữ nguyên endpoint B5 và chỉ mở rộng response theo hướng additi
 }
 ```
 
-Quy ước draft B7:
+Quy ước B7:
 
 - `source` và `ReleaseOption.source` được giữ lại để client B5 cũ không hỏng; `partial`, `providers` và `sources` là field mới.
 - `ProviderStatus.status`: `ok | degraded | unavailable`.

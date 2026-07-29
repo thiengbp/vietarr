@@ -4,6 +4,8 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/) + SemVer. Mỗi block Re
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-29
+
 ### Added
 - Add Block 06 Home Experience with a real-library hero, recent viewing history, download activity, discovery feeds, genre filters, and an available-only library surface.
 - Add authenticated home discovery APIs for TMDB day/week/popular feeds and movie genres without changing frozen B2/B3/B5 contracts.

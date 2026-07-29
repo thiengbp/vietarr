@@ -1,7 +1,7 @@
 # BLOCK-07 — MULTI-SOURCE RELEASE SEARCH
 
-> **Trạng thái:** PLANNED
-> **Phụ thuộc:** B5, B6 · **Bắt đầu:** sau khi Block 06 được RELEASED
+> **Trạng thái:** ACTIVE
+> **Phụ thuộc:** B5, B6 · **Bắt đầu:** 2026-07-29
 
 ## 1. Vision
 
@@ -47,7 +47,7 @@ Mỗi provider có timeout riêng và không được làm vượt tổng reques
 
 ### Interface Contract
 
-Xem `docs/API.md`, mục B7 draft. Contract chỉ được đóng băng khi Block 07 ACTIVE và implementation bắt đầu sau phase gate.
+Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyển ACTIVE; mọi thay đổi breaking tiếp theo cần ADR mới.
 
 ## 4. Business Rules
 
@@ -61,8 +61,8 @@ Xem `docs/API.md`, mục B7 draft. Contract chỉ được đóng băng khi Bloc
 
 ## 5. Implementation
 
-- [ ] Đóng Block 06 đúng phase gate và chuyển Block 07 sang ACTIVE.
-- [ ] Đóng băng contract B7 trước khi sửa code.
+- [x] Đóng Block 06 đúng phase gate và chuyển Block 07 sang ACTIVE.
+- [x] Đóng băng contract B7 trước khi sửa code.
 - [ ] Tạo `ReleaseProvider` + chuyển logic Prowlarr hiện tại sang `ProwlarrProvider`.
 - [ ] Thêm orchestration song song, timeout, trạng thái provider và kết quả một phần.
 - [ ] Thêm normalize/dedupe/ranking theo info hash.
