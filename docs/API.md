@@ -260,5 +260,23 @@ Quy ước B7:
 - `message` là thông báo an toàn cho người dùng; không chứa URL nội bộ, API key, cookie hoặc chi tiết proxy.
 - Nguồn website chỉ được bật sau capability check không cần thao tác người dùng hoặc CAPTCHA; không có hành vi bypass CAPTCHA.
 
+## B8 — Episode downloads
+
+B8 mở rộng additive luồng request B3 cho một episode Sonarr đã tồn tại.
+
+| Method | Path | Auth | Body | Trả về |
+|--------|------|------|------|--------|
+| POST | `/request/episode` | JWT | `{episodeId:'episode-31'}` | `202 {requestId,status:'queued',mediaId:'episode-31'}` |
+| GET | `/request/:id/progress` | JWT | none | `{status,progress,eta,error?}` |
+
+Quy ước B8:
+
+- `episodeId` bắt buộc theo dạng `episode-<sonarrEpisodeId>`; Core không nhận magnet, URL tải hoặc Sonarr API key từ client.
+- Tập đã có file trả `409 already_available`; ID không hợp lệ trả `400 invalid_episode_id`; Sonarr không tìm thấy episode trả `404 not_found`.
+- Request đang hoạt động của cùng user + episode được trả lại idempotently và không tạo thêm Sonarr command.
+- Core gửi `EpisodeSearch {episodeIds:[id]}` sau khi xác minh Sonarr có automatic indexer và download client.
+- `queued` chỉ phản ánh command Sonarr; `downloading` chỉ khi queue thật có episode; `available` khi Sonarr trả `hasFile=true`.
+- Command hoàn tất nhưng không có queue/file trả `not_found`; upstream/queue lỗi trả `failed` với thông báo an toàn.
+
 ## Quy ước lỗi
 JSON `{error: {code, message}}`; 400 input, 401/403 auth, 404, 502 khi app *arr downstream lỗi (kèm `upstream`).
