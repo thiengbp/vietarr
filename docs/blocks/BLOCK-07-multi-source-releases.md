@@ -88,7 +88,7 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 ## 7. Release
 
 - Dự kiến: `v1.3.0` sau khi Jooh gửi `APPROVED BLOCK 07` và toàn bộ DoD PASS.
-- Production Core/Web đang chạy image `sha-16d1bde`; Prowlarr đã enable indexer `BTDig` từ managed definition. Block vẫn ACTIVE cho đến approval phrase chính xác.
+- Production đang chạy Core `sha-6e07971` và Web `sha-16d1bde`; Prowlarr đã enable indexer `BTDig` từ managed definition. Block vẫn ACTIVE cho đến approval phrase chính xác.
 
 ## 8. Technical Debt
 
@@ -102,5 +102,5 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 - DNS production xác nhận `vietarr.home.arpa → 10.10.10.51`; VM `10.10.10.50` là media stack cũ, không phải dashboard VietArr production.
 - BT4G production check: direct TLS thất bại; FlareSolverr trả `ERR_SSL_PROTOCOL_ERROR`, không có response để parse. Nguồn không được cài/bật.
 - BTDig production check: HTTP 200, 20 magnet markers, không có CAPTCHA marker. Prowlarr test PASS; truy vấn “The Eternal Fragrance” trả 10 kết quả có info hash.
-- Core production smoke cho TMDB TV `251600`: provider `Prowlarr` `ok`, `partial=false`, 28 release sau chuẩn hóa, 9 release mang nguồn `BTDig` và có magnet hợp lệ.
+- Core production smoke cho TMDB TV `251600`: provider `Prowlarr` `ok`, `partial=false`, 28 release sau chuẩn hóa; cả 9 release BTDig có magnet hợp lệ và số seed/peer là `null` đúng theo capability nguồn.
 - Local browser smoke PASS với response B7 giả lập: trạng thái `ok/unavailable`, cảnh báo partial và nguồn gộp hiển thị đúng; viewport 375×812 không tràn ngang, nút cao 44px, ESC đóng modal và trả focus về nút mở.
