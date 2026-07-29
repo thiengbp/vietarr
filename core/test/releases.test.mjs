@@ -288,3 +288,26 @@ test("release search normalizes missing metadata and keeps deterministic ranking
   assert.equal(first.results[0].seeders, null);
   assert.equal(first.results[0].leechers, null);
 });
+
+test("release search does not present BTDig sentinel counts as measured swarm data", async () => {
+  const providers = [{
+    id: "prowlarr",
+    label: "Prowlarr",
+    configured: true,
+    search: async () => [{
+      title: "The Eternal Fragrance 2026 2160p WEB-DL",
+      source: "BTDig",
+      infoHash: "0123456789abcdef0123456789abcdef01234567",
+      seeders: 1,
+      leechers: 1
+    }]
+  }];
+
+  const service = createReleaseService({ config, discover, providers });
+  const response = await service.searchMovieReleases({ tmdbId: 10 });
+
+  assert.equal(response.results.length, 1);
+  assert.equal(response.results[0].source, "BTDig");
+  assert.equal(response.results[0].seeders, null);
+  assert.equal(response.results[0].leechers, null);
+});

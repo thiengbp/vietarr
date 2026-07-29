@@ -33,6 +33,12 @@ function cleanNumber(value) {
   return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
+function hasMeasuredSwarmCounts(source) {
+  // BTDig does not expose live seed/leech counts. Its Cardigann definition
+  // uses a numeric sentinel only because the indexer contract requires one.
+  return String(source || "").trim().toLowerCase() !== "btdig";
+}
+
 function titleTokens(value) {
   const stopWords = new Set(["a", "an", "and", "of", "the", "to"]);
   return String(value || "")
@@ -70,6 +76,7 @@ function normalizeRelease(row, fallbackSource = "Prowlarr") {
   const sizeBytes = cleanNumber(row.sizeBytes ?? row.size);
   const title = String(row.title || "Không rõ release");
   const source = String(row.source || row.indexer || fallbackSource);
+  const measuredSwarmCounts = hasMeasuredSwarmCounts(source);
   const sources = [...new Set([
     ...(Array.isArray(row.sources) ? row.sources : []),
     source
@@ -81,8 +88,8 @@ function normalizeRelease(row, fallbackSource = "Prowlarr") {
     sources,
     quality: row.quality || qualityFromTitle(title),
     sizeBytes,
-    seeders: cleanNumber(row.seeders),
-    leechers: cleanNumber(row.leechers),
+    seeders: measuredSwarmCounts ? cleanNumber(row.seeders) : null,
+    leechers: measuredSwarmCounts ? cleanNumber(row.leechers) : null,
     publishDate: row.publishDate || null,
     infoHash,
     magnetUrl: magnetUrl({ infoHash, title, sizeBytes })

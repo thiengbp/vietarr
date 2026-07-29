@@ -17,8 +17,8 @@ Một lần tìm nguồn trong VietArr có thể tổng hợp các provider đư
 - Mở rộng additive response B5 bằng `partial`, `providers` và `ReleaseOption.sources`.
 - Hiển thị trạng thái nguồn/kết quả một phần trong bộ chọn release.
 - Hỗ trợ cài custom Prowlarr definition vào thư mục `Definitions/Custom` bằng installer có tính lặp lại.
-- Thực hiện capability-gated PoC cho BT4G bằng custom Cardigann + FlareSolverr.
-- Giữ capability gate cho BTDig; chỉ bật khi không cần CAPTCHA và có adapter máy-đọc ổn định.
+- Thực hiện capability-gated PoC cho BT4G bằng custom Cardigann + FlareSolverr; giữ `unavailable` khi production không vượt qua TLS/challenge.
+- Bật BTDig qua managed Cardigann chỉ sau capability check production không cần CAPTCHA và kiểm tra magnet end-to-end.
 - Logging có cấu trúc, health và fixture test cho từng provider/definition.
 
 **Non-Goals:**
@@ -68,9 +68,9 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 - [x] Thêm normalize/dedupe/ranking theo info hash.
 - [x] Mở rộng ReleasePicker bằng trạng thái nguồn và cảnh báo partial.
 - [x] Thêm installer path idempotent cho custom Prowlarr definitions.
-- [ ] Viết BT4G custom-definition PoC và capability check production.
-- [ ] Ghi rõ BTDig unavailable nếu vẫn trả CAPTCHA; không cố bypass.
-- [ ] Chạy QA, security review và cập nhật handoff.
+- [x] Chạy BT4G capability check trực tiếp và qua FlareSolverr; giữ nguồn `unavailable` vì production lỗi TLS/challenge.
+- [x] Thêm managed BTDig Cardigann definition, capability-check và enable trên Prowlarr production.
+- [x] Chạy QA, security review và cập nhật handoff.
 
 ## 6. QA / Definition of Done
 
@@ -80,14 +80,15 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 - [x] Contract test: client B5 cũ vẫn đọc được `source` và `results`.
 - [x] Security test: response/log không lộ Prowlarr key, cookie, proxy URL hoặc FlareSolverr endpoint.
 - [x] Installer test: custom definition được cài/cập nhật idempotent và không ghi đè file do người dùng quản lý.
-- [ ] BT4G production capability check PASS trước khi bật; challenge/CAPTCHA phải để nguồn ở `unavailable`.
-- [ ] BTDig chỉ bật khi adapter không cần CAPTCHA; nếu chưa đạt, UI hiển thị unavailable có lý do.
+- [x] BT4G production capability check không PASS; nguồn không được cài/bật và không có hành vi bypass challenge/CAPTCHA.
+- [x] BTDig adapter production trả kết quả, info hash và magnet không cần CAPTCHA; Core không trình bày sentinel của Cardigann như số seed/peer đo thật.
 - [x] Core test, Web lint/build và browser smoke desktop/mobile PASS.
 - [x] Không gửi request tải thật trong smoke test nếu chưa có thao tác phê duyệt riêng.
 
 ## 7. Release
 
 - Dự kiến: `v1.3.0` sau khi Jooh gửi `APPROVED BLOCK 07` và toàn bộ DoD PASS.
+- Production Core/Web đang chạy image `sha-16d1bde`; Prowlarr đã enable indexer `BTDig` từ managed definition. Block vẫn ACTIVE cho đến approval phrase chính xác.
 
 ## 8. Technical Debt
 
@@ -98,6 +99,8 @@ Xem `docs/API.md`, mục B7. Contract được đóng băng khi Block 07 chuyể
 
 - BT4G/BTDig là search index, không phải tracker; tracker nằm trong magnet/torrent mà chúng trả về.
 - Bitmagnet đã là DHT crawler/search engine nội bộ và không cần thay thế để có kiến trúc multi-source.
-- Tình trạng kiểm tra 2026-07-29: BT4G trả Cloudflare challenge; BTDig trả Google reCAPTCHA; cả hai mặc định chưa enable.
-- Capability check từ VM production ngày 2026-07-29 chưa chạy được vì SSH tới `10.10.10.50:22` timeout; không suy diễn PASS và không bật nguồn.
+- DNS production xác nhận `vietarr.home.arpa → 10.10.10.51`; VM `10.10.10.50` là media stack cũ, không phải dashboard VietArr production.
+- BT4G production check: direct TLS thất bại; FlareSolverr trả `ERR_SSL_PROTOCOL_ERROR`, không có response để parse. Nguồn không được cài/bật.
+- BTDig production check: HTTP 200, 20 magnet markers, không có CAPTCHA marker. Prowlarr test PASS; truy vấn “The Eternal Fragrance” trả 10 kết quả có info hash.
+- Core production smoke cho TMDB TV `251600`: provider `Prowlarr` `ok`, `partial=false`, 28 release sau chuẩn hóa, 9 release mang nguồn `BTDig` và có magnet hợp lệ.
 - Local browser smoke PASS với response B7 giả lập: trạng thái `ok/unavailable`, cảnh báo partial và nguồn gộp hiển thị đúng; viewport 375×812 không tràn ngang, nút cao 44px, ESC đóng modal và trả focus về nút mở.
