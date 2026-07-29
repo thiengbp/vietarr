@@ -196,6 +196,14 @@ export function createServer(options = {}) {
     }
   });
 
+  app.post("/api/v1/request/episode", requireAuth, async (req, res, next) => {
+    try {
+      res.status(202).json(await requests.createEpisodeRequest({ user: req.user, episodeId: req.body?.episodeId }));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/v1/request/:id/progress", requireAuth, async (req, res, next) => {
     try {
       res.json(await requests.progress(req.params.id));

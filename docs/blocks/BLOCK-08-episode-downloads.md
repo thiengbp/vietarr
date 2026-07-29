@@ -60,19 +60,19 @@ Contract: `docs/API.md`, mục B8. Contract được đóng băng khi Block 08 c
 - [x] Release Block 07 `v1.3.0` và mở Block 08.
 - [x] Xác minh Sonarr production có `EpisodeSearchCommand.EpisodeIds`.
 - [x] Đóng băng API B8.
-- [ ] Migrate request log cho `media_type=episode` + `episode_id`.
-- [ ] Thêm Core episode request/progress và unit test.
-- [ ] Thêm EpisodeDownloadButton và trạng thái accessible.
+- [x] Migrate request log cho `media_type=episode` + `episode_id`.
+- [x] Thêm Core episode request/progress và unit test.
+- [x] Thêm EpisodeDownloadButton và trạng thái accessible.
 - [ ] Chạy QA, production smoke và cập nhật handoff.
 
 ## 6. QA / Definition of Done
 
-- [ ] Episode đã có file trả `409`, không tạo command.
-- [ ] Episode thiếu gửi đúng `EpisodeSearch { episodeIds:[id] }`.
-- [ ] Hai lần bấm khi request còn active không tạo command trùng.
-- [ ] Queue thật trả progress; import xong trả `available`; command hoàn tất không grab trả `not_found`.
-- [ ] Sonarr thiếu indexer/download client trả lỗi cấu hình cụ thể.
-- [ ] Core test, Web lint/build PASS.
+- [x] Episode đã có file trả `409`, không tạo command.
+- [x] Episode thiếu gửi đúng `EpisodeSearch { episodeIds:[id] }`.
+- [x] Hai lần bấm khi request còn active không tạo command trùng.
+- [x] Queue thật trả progress; import xong trả `available`; command hoàn tất không grab trả `not_found`.
+- [x] Sonarr thiếu indexer/download client trả lỗi cấu hình cụ thể.
+- [x] Core test, Web lint/build PASS.
 - [ ] Desktop/mobile không tràn ngang; nút ≥44px; trạng thái được screen reader thông báo.
 - [ ] Production smoke không gửi request tải thật nếu chưa chọn một episode thử nghiệm cụ thể.
 

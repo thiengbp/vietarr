@@ -32,8 +32,9 @@ export function migrateAppSchema(db) {
     CREATE TABLE IF NOT EXISTS request_log (
       id TEXT PRIMARY KEY,
       user_id INTEGER NOT NULL,
-      media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'series')),
-      tmdb_id INTEGER NOT NULL,
+      media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'series', 'episode')),
+      tmdb_id INTEGER,
+      episode_id INTEGER,
       arr_id INTEGER,
       command_id INTEGER,
       status TEXT NOT NULL,
@@ -49,9 +50,44 @@ export function migrateAppSchema(db) {
     );
   `);
 
-  const requestLogColumns = db.prepare("PRAGMA table_info(request_log)").all();
+  let requestLogColumns = db.prepare("PRAGMA table_info(request_log)").all();
+  const requestLogSql = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'request_log'").get()?.sql || "";
+  const tmdbColumn = requestLogColumns.find((column) => column.name === "tmdb_id");
+  const needsEpisodeMigration = !requestLogSql.includes("'episode'") || tmdbColumn?.notnull === 1;
+  if (needsEpisodeMigration) {
+    const commandIdExpr = requestLogColumns.some((column) => column.name === "command_id") ? "command_id" : "NULL";
+    const episodeIdExpr = requestLogColumns.some((column) => column.name === "episode_id") ? "episode_id" : "NULL";
+    db.pragma("foreign_keys = OFF");
+    db.exec(`
+      BEGIN IMMEDIATE;
+      CREATE TABLE request_log_next (
+        id TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'series', 'episode')),
+        tmdb_id INTEGER,
+        episode_id INTEGER,
+        arr_id INTEGER,
+        command_id INTEGER,
+        status TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+      INSERT INTO request_log_next (id, user_id, media_type, tmdb_id, episode_id, arr_id, command_id, status, created_at, updated_at)
+      SELECT id, user_id, media_type, tmdb_id, ${episodeIdExpr}, arr_id, ${commandIdExpr}, status, created_at, updated_at
+      FROM request_log;
+      DROP TABLE request_log;
+      ALTER TABLE request_log_next RENAME TO request_log;
+      COMMIT;
+    `);
+    db.pragma("foreign_keys = ON");
+    requestLogColumns = db.prepare("PRAGMA table_info(request_log)").all();
+  }
   if (!requestLogColumns.some((column) => column.name === "command_id")) {
     db.exec("ALTER TABLE request_log ADD COLUMN command_id INTEGER");
+  }
+  if (!requestLogColumns.some((column) => column.name === "episode_id")) {
+    db.exec("ALTER TABLE request_log ADD COLUMN episode_id INTEGER");
   }
 
   db.prepare(`
@@ -92,10 +128,19 @@ export function createAppDb(path) {
       AND status NOT IN ('failed', 'not_found')
   `);
   const insertRequestStmt = db.prepare(`
-    INSERT INTO request_log (id, user_id, media_type, tmdb_id, arr_id, status, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO request_log (id, user_id, media_type, tmdb_id, episode_id, arr_id, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const getRequestStmt = db.prepare("SELECT * FROM request_log WHERE id = ?");
+  const findActiveEpisodeRequestStmt = db.prepare(`
+    SELECT * FROM request_log
+    WHERE user_id = ?
+      AND media_type = 'episode'
+      AND episode_id = ?
+      AND status NOT IN ('available', 'failed', 'not_found')
+    ORDER BY created_at DESC
+    LIMIT 1
+  `);
   const updateRequestStmt = db.prepare(`
     UPDATE request_log
     SET arr_id = COALESCE(?, arr_id),
@@ -155,10 +200,13 @@ export function createAppDb(path) {
     countRequestsSince({ userId, since }) {
       return countRequestsTodayStmt.get(userId, since).count;
     },
-    createRequestLog({ id, userId, mediaType, tmdbId, arrId = null, status = "queued" }) {
+    createRequestLog({ id, userId, mediaType, tmdbId = null, episodeId = null, arrId = null, status = "queued" }) {
       const ts = nowIso();
-      insertRequestStmt.run(id, userId, mediaType, tmdbId, arrId, status, ts, ts);
+      insertRequestStmt.run(id, userId, mediaType, tmdbId, episodeId, arrId, status, ts, ts);
       return getRequestStmt.get(id);
+    },
+    findActiveEpisodeRequest({ userId, episodeId }) {
+      return findActiveEpisodeRequestStmt.get(userId, episodeId) || null;
     },
     updateRequestLog({ id, arrId = null, commandId = null, status }) {
       updateRequestStmt.run(arrId, commandId, status, nowIso(), id);

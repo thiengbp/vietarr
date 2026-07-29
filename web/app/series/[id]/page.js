@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EpisodeDownloadGrid } from "@/components/EpisodeDownloadGrid";
 import { PlayMenu } from "@/components/PlayMenu";
 import { QualityBadge } from "@/components/QualityBadge";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -90,14 +91,7 @@ export default async function SeriesDetailPage({ params }) {
             <summary className="cursor-pointer font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
               {missingEpisodes.length} tập chưa tải
             </summary>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {missingEpisodes.map((episode) => (
-                <div key={episode.id} className="rounded-lg border border-subtle bg-base px-3 py-3">
-                  <p className="text-xs font-semibold text-secondary">{episodeCode(episode)}</p>
-                  <p className="mt-1 truncate text-sm">{episode.title}</p>
-                </div>
-              ))}
-            </div>
+            <EpisodeDownloadGrid episodes={missingEpisodes} />
           </details>
         ) : null}
       </section>

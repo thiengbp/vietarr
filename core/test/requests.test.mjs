@@ -17,7 +17,15 @@ function createDb() {
     countRequestsSince: () => 0,
     createRequestLog(row) {
       const timestamp = new Date().toISOString();
-      const next = { ...row, arr_id: null, command_id: null, created_at: timestamp, updated_at: timestamp };
+      const next = {
+        ...row,
+        media_type: row.mediaType,
+        arr_id: row.arrId ?? null,
+        episode_id: row.episodeId ?? null,
+        command_id: null,
+        created_at: timestamp,
+        updated_at: timestamp
+      };
       logs.set(row.id, next);
       return next;
     },
@@ -33,7 +41,13 @@ function createDb() {
       logs.set(id, next);
       return next;
     },
-    getRequestLog: (id) => logs.get(id) || null
+    getRequestLog: (id) => logs.get(id) || null,
+    findActiveEpisodeRequest({ userId, episodeId }) {
+      return [...logs.values()].find((row) => row.userId === userId
+        && row.mediaType === "episode"
+        && row.episode_id === episodeId
+        && !["available", "failed", "not_found"].includes(row.status)) || null;
+    }
   };
 }
 
@@ -217,4 +231,107 @@ test("selected release without a Radarr queue stops waiting after the grace peri
     error: "Radarr không tạo tác vụ tải cho nguồn đã chọn"
   });
   assert.equal(db.getRequestLog("req_stale").status, "not_found");
+});
+
+test("episode request monitors one missing episode, searches once, and reports real progress", async () => {
+  const db = createDb();
+  let available = false;
+  let commandCount = 0;
+  let monitoredEpisode;
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(input);
+    if (url.pathname === "/api/v3/episode/31" && options.method === "PUT") {
+      monitoredEpisode = JSON.parse(options.body);
+      return json(monitoredEpisode);
+    }
+    if (url.pathname === "/api/v3/episode/31") {
+      return json(available
+        ? { id: 31, seriesId: 1, hasFile: true, episodeFile: { path: "/data/tv/S01E31.mkv" } }
+        : { id: 31, seriesId: 1, seasonNumber: 1, episodeNumber: 31, monitored: false, hasFile: false });
+    }
+    if (url.pathname === "/api/v3/indexer") return json([{ id: 1, enableAutomaticSearch: true }]);
+    if (url.pathname === "/api/v3/downloadclient") return json([{ id: 1, enable: true }]);
+    if (url.pathname === "/api/v3/command" && options.method === "POST") {
+      commandCount += 1;
+      assert.deepEqual(JSON.parse(options.body), { name: "EpisodeSearch", episodeIds: [31] });
+      return json({ id: 88, state: "queued" }, 201);
+    }
+    if (url.pathname === "/api/v3/queue") {
+      return json({ records: [{ seriesId: 1, title: "The.Eternal.Fragrance.S01.Pack", status: "downloading", size: 1000, sizeleft: 250, timeleft: "00:05:00" }] });
+    }
+    throw new Error(`Unexpected request ${options.method || "GET"} ${url.pathname}`);
+  };
+
+  const service = createRequestService({ db, config, discover, fetchImpl });
+  const first = await service.createEpisodeRequest({ user, episodeId: "episode-31" });
+  const second = await service.createEpisodeRequest({ user, episodeId: "episode-31" });
+
+  assert.equal(first.status, "queued");
+  assert.equal(second.requestId, first.requestId);
+  assert.equal(second.reused, true);
+  assert.equal(commandCount, 1);
+  assert.equal(monitoredEpisode.monitored, true);
+  assert.equal(db.getRequestLog(first.requestId).command_id, 88);
+  assert.deepEqual(await service.progress(first.requestId), {
+    status: "downloading",
+    progress: 75,
+    eta: "00:05:00"
+  });
+
+  available = true;
+  assert.deepEqual(await service.progress(first.requestId), {
+    status: "available",
+    progress: 100,
+    eta: null
+  });
+});
+
+test("episode request rejects an episode that already has a file", async () => {
+  const db = createDb();
+  const fetchImpl = async (input) => {
+    const url = new URL(input);
+    if (url.pathname === "/api/v3/episode/31") {
+      return json({ id: 31, seriesId: 1, hasFile: true, episodeFile: { path: "/data/tv/S01E31.mkv" } });
+    }
+    throw new Error(`Unexpected request ${url.pathname}`);
+  };
+  const service = createRequestService({ db, config, discover, fetchImpl });
+
+  await assert.rejects(
+    service.createEpisodeRequest({ user, episodeId: "episode-31" }),
+    (error) => error.status === 409 && error.code === "already_available"
+  );
+  assert.equal(db.logs.size, 0);
+});
+
+test("episode request reports not_found when Sonarr search completes without a grab", async () => {
+  const db = createDb();
+  db.logs.set("epreq_not_found", {
+    id: "epreq_not_found",
+    user_id: 1,
+    userId: 1,
+    media_type: "episode",
+    mediaType: "episode",
+    episode_id: 12,
+    arr_id: 1,
+    command_id: 99,
+    status: "queued",
+    created_at: "2026-07-29T10:00:00.000Z",
+    updated_at: "2026-07-29T10:00:00.000Z"
+  });
+  const fetchImpl = async (input) => {
+    const url = new URL(input);
+    if (url.pathname === "/api/v3/episode/12") return json({ id: 12, seriesId: 1, hasFile: false });
+    if (url.pathname === "/api/v3/queue") return json({ records: [] });
+    if (url.pathname === "/api/v3/command/99") return json({ id: 99, state: "completed", result: "successful" });
+    throw new Error(`Unexpected request ${url.pathname}`);
+  };
+  const service = createRequestService({ db, config, discover, fetchImpl });
+
+  assert.deepEqual(await service.progress("epreq_not_found"), {
+    status: "not_found",
+    progress: 0,
+    eta: null,
+    error: "Không tìm thấy nguồn phù hợp cho tập này"
+  });
 });

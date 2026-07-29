@@ -19,6 +19,7 @@ async function arrJson({ baseUrl, apiKey, path, method = "GET", body, fetchImpl 
     body: body ? JSON.stringify(body) : undefined
   });
   if (!res.ok) {
+    if (res.status === 404) throw requestError(404, "not_found", "Không tìm thấy nội dung trong Radarr/Sonarr");
     const text = await res.text().catch(() => "");
     throw requestError(502, "upstream_unavailable", `${method} ${path} failed: ${res.status} ${text}`.trim());
   }
@@ -45,11 +46,16 @@ function queueProgress(item) {
   return Math.max(0, Math.min(100, Math.round(((size - sizeLeft) / size) * 100)));
 }
 
-function queueError(item) {
+function queueError(item, product = "Radarr") {
   const state = [item?.status, item?.trackedDownloadStatus, item?.trackedDownloadState].filter(Boolean).join(" ").toLowerCase();
   if (!/(error|failed)/.test(state)) return null;
   const messages = (item?.statusMessages || []).flatMap((entry) => entry.messages || entry.message || []).filter(Boolean);
-  return messages.join(" · ") || "Radarr báo lỗi khi tải phim";
+  return messages.join(" · ") || `${product} báo lỗi khi tải nội dung`;
+}
+
+function episodeArrId(value) {
+  const match = String(value || "").match(/^episode-(\d+)$/);
+  return match ? Number(match[1]) : null;
 }
 
 function releaseRejectionMessage(rejection) {
@@ -93,6 +99,20 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch, 
     }
     if (!downloadClients.some((client) => client.enable !== false)) {
       throw requestError(503, "download_client_unavailable", "Chưa có trình tải xuống đang hoạt động trong Radarr");
+    }
+  }
+
+  async function ensureEpisodeDownloadReady() {
+    const [indexers, downloadClients] = await Promise.all([
+      arrJson({ ...config.sonarr, path: "/api/v3/indexer", fetchImpl }),
+      arrJson({ ...config.sonarr, path: "/api/v3/downloadclient", fetchImpl })
+    ]);
+    const automaticIndexers = indexers.filter((indexer) => indexer.enableAutomaticSearch !== false && indexer.enable !== false);
+    if (automaticIndexers.length === 0) {
+      throw requestError(503, "download_source_unavailable", "Chưa cấu hình nguồn tải trong Prowlarr/Sonarr");
+    }
+    if (!downloadClients.some((client) => client.enable !== false)) {
+      throw requestError(503, "download_client_unavailable", "Chưa có trình tải xuống đang hoạt động trong Sonarr");
     }
   }
 
@@ -217,9 +237,121 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch, 
     }
   }
 
+  async function createEpisodeRequest({ user, episodeId }) {
+    const id = episodeArrId(episodeId);
+    if (!Number.isInteger(id) || id <= 0) throw requestError(400, "invalid_episode_id", "episodeId không hợp lệ");
+
+    const active = db.findActiveEpisodeRequest?.({ userId: user.id, episodeId: id });
+    if (active) {
+      return { requestId: active.id, status: active.status, mediaId: `episode-${id}`, reused: true };
+    }
+
+    const dailyLimit = Number(db.getSetting("rate_limit_per_day") || 5);
+    const usedToday = db.countRequestsSince({ userId: user.id, since: startOfTodayIso() });
+    if (usedToday >= dailyLimit) throw requestError(429, "rate_limited", "Đã đạt giới hạn hôm nay");
+
+    const episode = await arrJson({ ...config.sonarr, path: `/api/v3/episode/${id}?includeEpisodeFile=true`, fetchImpl });
+    if (episode?.hasFile || episode?.episodeFile?.path) throw requestError(409, "already_available", "Tập này đã có trong thư viện");
+    await ensureEpisodeDownloadReady();
+
+    const requestId = `epreq_${crypto.randomUUID()}`;
+    const log = db.createRequestLog({
+      id: requestId,
+      userId: user.id,
+      mediaType: "episode",
+      episodeId: id,
+      arrId: Number(episode.seriesId) || null,
+      status: "queued"
+    });
+    try {
+      if (episode.monitored === false) {
+        await arrJson({
+          ...config.sonarr,
+          path: `/api/v3/episode/${id}`,
+          method: "PUT",
+          body: { ...episode, monitored: true },
+          fetchImpl
+        });
+      }
+      const command = await arrJson({
+        ...config.sonarr,
+        path: "/api/v3/command",
+        method: "POST",
+        body: { name: "EpisodeSearch", episodeIds: [id] },
+        fetchImpl
+      });
+      db.updateRequestLog({ id: requestId, arrId: Number(episode.seriesId) || null, commandId: command?.id || null, status: "queued" });
+      return { requestId: log.id, status: "queued", mediaId: `episode-${id}`, reused: false };
+    } catch (error) {
+      db.updateRequestLog({ id: requestId, status: "failed" });
+      throw error;
+    }
+  }
+
+  async function episodeRequestProgress(row) {
+    const episodeId = Number(row.episode_id);
+    const episode = await arrJson({ ...config.sonarr, path: `/api/v3/episode/${episodeId}?includeEpisodeFile=true`, fetchImpl });
+    if (episode?.hasFile || episode?.episodeFile?.path) {
+      db.updateRequestLog({ id: row.id, status: "available" });
+      return { status: "available", progress: 100, eta: null };
+    }
+
+    const queue = await arrJson({
+      ...config.sonarr,
+      path: "/api/v3/queue?page=1&pageSize=100&includeUnknownSeriesItems=true",
+      fetchImpl
+    });
+    const item = queueRecords(queue).find((entry) => {
+      if (Number(entry.episodeId || entry.episode?.id) === episodeId) return true;
+      if (Array.isArray(entry.episodeIds) && entry.episodeIds.some((id) => Number(id) === episodeId)) return true;
+      const sameSeries = Number(entry.seriesId || entry.series?.id) === Number(episode.seriesId || row.arr_id);
+      if (!sameSeries) return false;
+      const title = String(entry.title || "");
+      const seasonCode = `S${String(episode.seasonNumber ?? 0).padStart(2, "0")}`;
+      const episodeCode = `${seasonCode}E${String(episode.episodeNumber ?? 0).padStart(2, "0")}`;
+      return title.toUpperCase().includes(episodeCode) || title.toUpperCase().includes(seasonCode);
+    });
+    if (item) {
+      const error = queueError(item, "Sonarr");
+      const status = error ? "failed" : "downloading";
+      db.updateRequestLog({ id: row.id, status });
+      return {
+        status,
+        progress: queueProgress(item),
+        eta: item.timeleft || item.estimatedCompletionTime || item.eta || null,
+        ...(error ? { error } : {})
+      };
+    }
+
+    if (row.command_id) {
+      const command = await arrJson({ ...config.sonarr, path: `/api/v3/command/${row.command_id}`, fetchImpl });
+      const state = String(command?.state || "").toLowerCase();
+      if (["queued", "started"].includes(state)) return { status: "queued", progress: 0, eta: null };
+      if (state === "completed") {
+        const failed = String(command?.result || "").toLowerCase() === "failed";
+        const status = failed ? "failed" : "not_found";
+        db.updateRequestLog({ id: row.id, status });
+        return {
+          status,
+          progress: 0,
+          eta: null,
+          error: failed ? command?.message || "Sonarr không thể tìm tập này" : "Không tìm thấy nguồn phù hợp cho tập này"
+        };
+      }
+    }
+
+    const lastUpdatedAt = Date.parse(row.updated_at || row.created_at || "");
+    if (!row.command_id && Number.isFinite(lastUpdatedAt) && now() - lastUpdatedAt >= UNTRACKED_REQUEST_GRACE_MS) {
+      db.updateRequestLog({ id: row.id, status: "not_found" });
+      return { status: "not_found", progress: 0, eta: null, error: "Sonarr không tạo tác vụ tải cho tập này" };
+    }
+    return { status: row.status, progress: 0, eta: null };
+  }
+
   async function requestProgress(requestId) {
     const row = db.getRequestLog(requestId);
     if (!row) throw requestError(404, "not_found", "Request not found");
+    if (row.media_type === "episode") return episodeRequestProgress(row);
     if (!row.arr_id) return { status: row.status, progress: 0, eta: null };
 
     const movie = await arrJson({ ...config.radarr, path: `/api/v3/movie/${row.arr_id}`, fetchImpl });
@@ -289,6 +421,7 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch, 
       if (type !== "movie") throw requestError(400, "unsupported_type", "Block 05 currently supports movie requests first");
       return createSelectedReleaseRequest({ user, tmdbId, qualityProfileId, release });
     },
+    createEpisodeRequest,
     progress: requestProgress
   };
 }
