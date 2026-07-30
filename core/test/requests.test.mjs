@@ -323,7 +323,7 @@ test("episode request reports not_found when Sonarr search completes without a g
     const url = new URL(input);
     if (url.pathname === "/api/v3/episode/12") return json({ id: 12, seriesId: 1, hasFile: false });
     if (url.pathname === "/api/v3/queue") return json({ records: [] });
-    if (url.pathname === "/api/v3/command/99") return json({ id: 99, state: "completed", result: "successful" });
+    if (url.pathname === "/api/v3/command/99") return json({ id: 99, status: "completed", result: "unknown" });
     throw new Error(`Unexpected request ${url.pathname}`);
   };
   const service = createRequestService({ db, config, discover, fetchImpl });

@@ -325,7 +325,7 @@ export function createRequestService({ db, config, discover, fetchImpl = fetch, 
 
     if (row.command_id) {
       const command = await arrJson({ ...config.sonarr, path: `/api/v3/command/${row.command_id}`, fetchImpl });
-      const state = String(command?.state || "").toLowerCase();
+      const state = String(command?.status || command?.state || "").toLowerCase();
       if (["queued", "started"].includes(state)) return { status: "queued", progress: 0, eta: null };
       if (state === "completed") {
         const failed = String(command?.result || "").toLowerCase() === "failed";
