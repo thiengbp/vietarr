@@ -20,6 +20,10 @@ test("separates playable movies and series with type-safe destinations", () => {
   assert.deepEqual(model.seriesCards, [{ item: seriesReady, href: "/series/series-1" }]);
   assert.equal(model.heroMovie, movieReady);
   assert.equal(model.empty, false);
+  assert.deepEqual(model.sections.map(({ id, title, href, count }) => ({ id, title, href, count })), [
+    { id: "movie-library-title", title: "Phim lẻ của anh", href: "/movies", count: 1 },
+    { id: "series-library-title", title: "Phim bộ của anh", href: "/series", count: 1 }
+  ]);
 });
 
 test("keeps movie and series empty states independent", () => {
